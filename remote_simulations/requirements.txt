@@ -1,0 +1,7 @@
+matplotlib
+scikit-image
+scikit-learn
+scipy
+sympy
+tqdm
+xraylib
