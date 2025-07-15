@@ -43,8 +43,9 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   :caption: Modules
+   :caption: Contents:
 
+   installation
    modules
 
 References
