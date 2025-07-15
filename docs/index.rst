@@ -1,7 +1,7 @@
 CATNIP Documentation
 ====================
 
-.. image:: _static/Logo_CATNIP.pdf
+.. image:: _static/Logo_CATNIP.png
    :align: center
    :width: 300px
 
