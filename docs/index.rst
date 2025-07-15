@@ -20,15 +20,15 @@ Features
 - Support for multiple imaging modalities:
   
   - Edge Illumination (EI) [Olivo2021]_
-  - Structured Grating-based Imaging (SGBI) [Hipp2016]_
-  - Sandpaper-based Imaging (SBI) [DiTrapani2024]_
-  - Propagation-based Imaging (PBI) [Gradl2017]_
+  - Single Grating-Based Imaging (SGBI) [Hipp2016]_
+  - Speckle-Based Imaging (SBI) [DiTrapani2024]_
+  - Propagation-Based Imaging (PBI) [Gradl2017]_
 
 - Data generation for both 2D multimodal retrieval and CT reconstruction.
 - Implementations of state-of-the-art phase retrieval algorithms:
   
   - Unified Modulated Pattern Analysis (UMPA) [DeMarco2023]_
-  - Local Contrast Separation (LCS) [Quenot2021]_
+  - Low Coherence System (LCS) [Quenot2021]_
 
 - Modular Python codebase for easy extension and integration.
 - Graphical user interface for simulation setup and visualization.
@@ -50,10 +50,37 @@ Contents
 References
 ----------
 
-.. [Olivo2021] Olivo, A., et al. "Edge-illumination X-ray phase-contrast imaging." (2021).
-.. [Hipp2016] Hipp, A., et al. "Structured grating-based X-ray imaging." (2016).
-.. [DiTrapani2024] Di Trapani, V., et al. "Sandpaper-based X-ray phase imaging." (2024).
-.. [Gradl2017] Gradl, R., et al. "Propagation-based X-ray phase-contrast imaging." (2017).
-.. [DeMarco2023] De Marco, F., et al. "Unified Modulated Pattern Analysis for phase retrieval." (2023).
-.. [Quenot2021] Quenot, M., et al. "Local Contrast Separation for multimodal imaging." (2021).
-.. [Li2017] Li, K., et al. "Multi-slice approach for X-ray phase imaging." (2017).
+.. [Olivo2021] Alessandro Olivo. “Edge-illumination x-ray phase-contrast imaging”. In:
+Journal of Physics: Condensed Matter 33.36 (July 2021), p. 363002. DOI:
+10 . 1088 / 1361 - 648X / ac0e6e. URL: https : / / dx . doi . org / 10 .
+1088/1361-648X/ac0e6e.
+.. [Hipp2016] A. Hipp et al. “Single-grating interferometer for high-resolution phase-
+contrast imaging at synchrotron radiation sources”. In: Developments in
+X-Ray Tomography X. Ed. by Stuart R. Stock, Bert Müller, and Ge Wang.
+Vol. 9967. International Society for Optics and Photonics. SPIE, 2016,
+p. 996718. DOI: 10.1117/12.2237582. URL: https://doi.org/10.
+1117/12.2237582.
+.. [DiTrapani2024] Vittorio Di Trapani et al. “Speckle-based imaging (SBI) applications with
+spectral photon counting detectors at the newly established OPTIMATO
+(OPTimal IMAging and TOmography) laboratory”. In: Journal of Instru-
+mentation 19.01 (Jan. 2024), p. C01018. DOI: 10.1088/1748- 0221/
+19 / 01 / C01018. URL: https : / / dx . doi . org / 10 . 1088 / 1748 -
+0221/19/01/C01018.
+.. [Gradl2017] Regine Gradl et al. “Propagation-based Phase-Contrast X-ray Imaging
+at a Compact Light Source”. In: Scientific Reports 7 (July 2017), p. 4908.
+DOI: 10.1038/s41598-017-04739-w.
+.. [DeMarco2023] Fabio De Marco et al. “High-speed processing of X-ray wavefront marking
+data with the Unified Modulated Pattern Analysis (UMPA) model”. In:
+Opt. Express 31.1 (Jan. 2023), pp. 635–650. DOI: 10.1364/OE.474794.
+URL: https://opg.optica.org/oe/abstract.cfm?URI=oe-31-1-
+635.
+.. [Quenot2021] Laurène Quénot et al. “Implicit tracking approach for X-ray phase-contrast
+imaging with a random mask and a conventional system”. In: Optica
+8.11 (Nov. 2021), pp. 1412–1415. DOI: 10.1364/OPTICA.434954. URL:
+https://opg.optica.org/optica/abstract.cfm?URI=optica-
+8-11-1412.
+.. [Li2017] Kenan Li, Michael Wojcik, and Chris Jacobsen. “Multislice does it all;
+calculating the performance of nanofocusing X-ray optics”. In: Opt. Ex-
+press 25.3 (Feb. 2017), pp. 1831–1846. DOI: 10.1364/OE.25.001831.
+URL: https://opg.optica.org/oe/abstract.cfm?URI=oe-25-3-
+1831.
