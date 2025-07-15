@@ -64,3 +64,5 @@ traitlets==5.14.3
 wcwidth==0.2.13
 widgetsnbextension==4.0.14
 xraylib==4.1.5
+sphinx
+sphinx_rtd_theme
