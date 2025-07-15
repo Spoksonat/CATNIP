@@ -8,6 +8,14 @@ from scipy.ndimage import gaussian_filter
 
 class Retrieval:
     def __init__(self, I_refs: np.ndarray, I_samps: np.ndarray, dict_params) -> None:
+        """
+        Initializes the Retrieval class for EI phase retrieval.
+
+        Args:
+            I_refs (np.ndarray): Reference intensity images.
+            I_samps (np.ndarray): Sample intensity images.
+            dict_params (dict): Dictionary of retrieval parameters.
+        """
         self.I_refs = I_refs
         self.I_samps = I_samps
         self.binning_retrieval = dict_params["binning retrieval"]
@@ -18,6 +26,16 @@ class Retrieval:
         self.phase_retrieval()
     
     def binning(self, img, binning_factor):
+        """
+        Applies binning to an image using the specified binning factor.
+
+        Args:
+            img (np.ndarray): Input image.
+            binning_factor (int): Factor by which to bin the image.
+
+        Returns:
+            np.ndarray: Binned image.
+        """
         if(binning_factor == 1):
             binned_image = img
         elif(binning_factor%2 != 0):
@@ -28,6 +46,15 @@ class Retrieval:
         return binned_image
     
     def correct_raws(RAW):
+        """
+        Corrects damaged pixels in a raw image by replacing NaNs and outliers.
+
+        Args:
+            RAW (np.ndarray): Raw image data.
+
+        Returns:
+            np.ndarray: Corrected image.
+        """
         mean = np.nanmean(RAW[RAW != 0.0])
         RAW = np.nan_to_num(RAW, nan=mean)
         RAW[RAW > np.percentile(RAW, 99)] = 0.0
@@ -36,6 +63,9 @@ class Retrieval:
         return RAW
     
     def make_binning(self):
+        """
+        Applies binning to all reference and sample images and updates class attributes.
+        """
         I_refs_binned = []
         I_samps_binned = []
         for i in range(len(self.I_refs)):
@@ -45,7 +75,19 @@ class Retrieval:
         self.I_refs = np.array(I_refs_binned)
         self.I_samps = np.array(I_samps_binned)
 
-    def reconstruct_final(self,odd,even,n_imgs,inverse=False):
+    def reconstruct_final(self, odd, even, n_imgs, inverse=False):
+        """
+        Reconstructs final odd and even images from separated odd/even stacks.
+
+        Args:
+            odd (list): List of odd images.
+            even (list): List of even images.
+            n_imgs (int): Number of images.
+            inverse (bool, optional): If True, reverse image order.
+
+        Returns:
+            tuple: Arrays of reconstructed odd and even images.
+        """
         final_odd=np.transpose(np.zeros((self.RAWX.shape[1],n_imgs*(self.RAWX.shape[1]//2))))
         final_even=np.transpose(np.zeros((self.RAWX.shape[1],n_imgs*(self.RAWX.shape[1]//2))))
         #print(final.shape)
@@ -64,6 +106,9 @@ class Retrieval:
         return np.transpose(final_odd),np.transpose(final_even)
 
     def phase_retrieval(self):
+        """
+        Performs phase retrieval using the odd/even image separation and updates phase and attenuation attributes.
+        """
         P=[]
         I=[]
         for i in range(self.N):
@@ -82,6 +127,6 @@ class Retrieval:
         Att=(t_odd+t_even)/np.max(t_odd+t_even)
 
         self.diff_phase = PhaseD
-        self.T = Att 
+        self.T = Att
 
 

@@ -6,6 +6,14 @@ from tqdm import tqdm
 
 class LCS:
     def __init__(self, I_refs: np.ndarray, I_samps: np.ndarray, dict_params) -> None:
+        """
+        Initializes the LCS class for Local Contrast Separation retrieval.
+
+        Args:
+            I_refs (np.ndarray): Reference intensity images stack.
+            I_samps (np.ndarray): Sample intensity images stack.
+            dict_params (dict): Dictionary of retrieval parameters.
+        """
         self.I_refs = I_refs/np.max(I_refs)
         self.I_samps = I_samps/np.max(I_refs)
         self.dict_params = dict_params
@@ -19,7 +27,18 @@ class LCS:
 
         self.retrieve_LCS_Popcorn()
 
-    def LCS_ij(self, method: str, i: int, j:int) -> tuple:
+    def LCS_ij(self, method: str, i: int, j: int) -> tuple:
+        """
+        Solves the local system for a single pixel using analytical or LSQ-restricted method.
+
+        Args:
+            method (str): Solution method ("Analytical" or "LSQ-Restricted").
+            i (int): Row index.
+            j (int): Column index.
+
+        Returns:
+            tuple: Solution vector x, system matrix A, and right-hand side b.
+        """
 
         b = self.I_refs[:,i,j]
         A = np.zeros((self.I_refs.shape[0],3))
@@ -44,6 +63,15 @@ class LCS:
         return x, A, b
     
     def retrieve_LCS(self, method: str) -> tuple:
+        """
+        Retrieves transmission and phase gradients for all pixels using the specified method.
+
+        Args:
+            method (str): Solution method ("Analytical" or "LSQ-Restricted").
+
+        Returns:
+            tuple: Transmission (T), phase gradient in x (Dphi_x), and phase gradient in y (Dphi_y).
+        """
 
         inv_T = np.zeros((self.I_refs.shape[-2], self.I_refs.shape[-1]))
         Dphi_x = np.zeros((self.I_refs.shape[-2], self.I_refs.shape[-1]))
@@ -58,6 +86,10 @@ class LCS:
         self.Dphi_y = Dphi_y
     
     def retrieve_LCS_Popcorn(self):
+        """
+        Retrieves transmission and phase gradients for all pixels using QR decomposition for improved stability.
+        """
+
         Nz, Ny, Nx= self.I_refs.shape
         LHS=np.ones(((Nz, Ny, Nx)))
         RHS=np.ones((((Nz,3, Ny, Nx))))

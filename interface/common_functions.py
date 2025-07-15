@@ -10,6 +10,15 @@ import os
 import time
 
 def define_param_dict_general(window):
+    """
+    Defines and populates the parameter dictionary for the simulation window from all input widgets.
+
+    Args:
+        window: The main window object containing all parameter widgets.
+
+    Returns:
+        None
+    """
     window.dict_params = {}
     
     for key, widget in window.source_dropdowns:
@@ -57,6 +66,16 @@ def define_param_dict_general(window):
             window.dict_params[key] = widget.get()
 
 def load_parameters_general(window, ext_sim=False):
+    """
+    Loads simulation parameters from a file or remote JSON and populates the window widgets.
+
+    Args:
+        window: The main window object containing all parameter widgets.
+        ext_sim (bool, optional): If True, loads parameters from remote simulation.
+
+    Returns:
+        None
+    """
     if(ext_sim == False):
         file_path = filedialog.askopenfilename(
         title="Select NumPy File",
@@ -126,14 +145,41 @@ def load_parameters_general(window, ext_sim=False):
     window.define_param_dict()
 
 def on_back_general(window):
+    """
+    Handles the event for returning to the main simulation window.
+
+    Args:
+        window: The main window object.
+
+    Returns:
+        None
+    """
     window.destroy()
     window.controller.show_simulation_window()
 
 def on_back_ct_general(window):
+    """
+    Handles the event for returning to the CT simulation window.
+
+    Args:
+        window: The main window object.
+
+    Returns:
+        None
+    """
     window.destroy()
     window.controller.show_ct_simulation_window()
 
 def general_help_general(window):
+    """
+    Displays a help window with general instructions for the EI technique configuration.
+
+    Args:
+        window: The main window object.
+
+    Returns:
+        None
+    """
     help_win = Toplevel(window)
     help_win.title("General Help")
     label = Label(help_win, text=(
@@ -145,13 +191,31 @@ def general_help_general(window):
     label.pack()
 
 def show_help_general(window, message):
+    """
+    Displays a help window with a custom message.
+
+    Args:
+        window: The main window object.
+        message (str): Help message to display.
+
+    Returns:
+        None
+    """
     help_win = Toplevel(window)
     help_win.title("Help")
     label = Label(help_win, text=message, justify="left", padx=10, pady=10)
     label.pack()
 
 def save_parameters_general(window):
+    """
+    Saves the current parameter dictionary to a .npy file.
 
+    Args:
+        window: The main window object.
+
+    Returns:
+        None
+    """
     file_path = filedialog.asksaveasfilename(
         defaultextension=".npy",
         filetypes=[("NumPy files", "*.npy")],
@@ -163,7 +227,15 @@ def save_parameters_general(window):
         np.save(file_path, window.dict_params)
 
 def update_parameters_general(window):
+    """
+    Updates the parameter dictionary and displays a confirmation window.
 
+    Args:
+        window: The main window object.
+
+    Returns:
+        None
+    """
     window.define_param_dict()
 
     update_win = Toplevel(window)
@@ -172,6 +244,16 @@ def update_parameters_general(window):
     label.pack()
 
 def on_spectrum_type_change_general(window, choice):
+    """
+    Handles changes in the spectrum type (Mono/Poly) and updates the UI accordingly.
+
+    Args:
+        window: The main window object.
+        choice (str): Selected spectrum type.
+
+    Returns:
+        None
+    """
     if choice == "Mono":
         window.energy_label.configure(text="Energy (keV)")
         if window.browse_btn:
@@ -198,6 +280,16 @@ def on_spectrum_type_change_general(window, choice):
             window.show_btn.pack(side="left", padx=(0, 5))  
 
 def on_samp_geometry_change_general(window, choice):
+    """
+    Handles changes in the sample geometry and updates the UI to show relevant extra parameters.
+
+    Args:
+        window: The main window object.
+        choice (str): Selected sample geometry.
+
+    Returns:
+        None
+    """
     n_rows = 4
     if(window.extra_sites > 0):
         last_textboxes = window.samp_textboxes[-window.extra_sites:]
@@ -240,6 +332,15 @@ def on_samp_geometry_change_general(window, choice):
         window.samp_textboxes.append((label, textbox))
 
 def browse_spectrum_file_general(window):
+    """
+    Opens a file dialog to select a spectrum file and updates the energy entry widget.
+
+    Args:
+        window: The main window object.
+
+    Returns:
+        None
+    """
     file_path = filedialog.askopenfilename(title="Select Spectrum File", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     if file_path:
         window.energy_entry.configure(state="normal")
@@ -248,6 +349,15 @@ def browse_spectrum_file_general(window):
         window.energy_entry.configure(state="readonly")
 
 def show_spectrum_file_general(window):
+    """
+    Loads and displays the selected spectrum file in a plot.
+
+    Args:
+        window: The main window object.
+
+    Returns:
+        None
+    """
     path = window.energy_entry.get()
     if not path:
         messagebox.showinfo("No file", "No spectrum file selected.")
@@ -273,6 +383,16 @@ def show_spectrum_file_general(window):
         messagebox.showerror("Error", f"Could not read or plot file:\n{str(e)}")
 
 def add_source_section_general(window, parent):
+    """
+    Adds the source parameters section to the UI.
+
+    Args:
+        window: The main window object.
+        parent: The parent UI element to attach the section to.
+
+    Returns:
+        None
+    """
     tab1 = parent
     # === Source Parameters Section ===
     window.source_frame = ctk.CTkFrame(tab1)
@@ -333,6 +453,16 @@ def add_source_section_general(window, parent):
         help_btn.grid(row=row+1, column=col*2+1, sticky="w", padx=(0, 10), pady=(0, 10))
 
 def add_det_section_general(window, parent):
+    """
+    Adds the detector parameters section to the UI.
+
+    Args:
+        window: The main window object.
+        parent: The parent UI element to attach the section to.
+
+    Returns:
+        None
+    """
     tab1 = parent
     # === Detector Parameters Section ===
     window.det_frame = ctk.CTkFrame(tab1)
@@ -363,6 +493,17 @@ def add_det_section_general(window, parent):
         help_btn.grid(row=row+1, column=col*2+1, sticky="w", padx=(0, 10), pady=(0, 10))
 
 def add_grat_section_general(window, parent, grat_params):
+    """
+    Adds the grating parameters section to the UI.
+
+    Args:
+        window: The main window object.
+        parent: The parent UI element to attach the section to.
+        grat_params (list): List of grating parameter names.
+
+    Returns:
+        None
+    """
     tab1 = parent
     # === Grating Parameters Section ===
     window.grat_frame = ctk.CTkFrame(tab1)
@@ -391,6 +532,17 @@ def add_grat_section_general(window, parent, grat_params):
         help_btn.grid(row=row+1, column=col*2+1, sticky="w", padx=(0, 10), pady=(0, 10))
 
 def add_sample_section_general(windows, parent, CT=False):
+    """
+    Adds the sample parameters section to the UI.
+
+    Args:
+        windows: The main window object.
+        parent: The parent UI element to attach the section to.
+        CT (bool, optional): If True, configures for CT simulation.
+
+    Returns:
+        None
+    """
     tab1 = parent
     # === Grating Parameters Section ===
     windows.samp_frame = ctk.CTkFrame(tab1)
@@ -449,6 +601,16 @@ def add_sample_section_general(windows, parent, CT=False):
         windows.samp_textboxes.append((label, textbox))
 
 def add_DF_section_general(window, parent):
+    """
+    Adds the dark-field parameters section to the UI.
+
+    Args:
+        window: The main window object.
+        parent: The parent UI element to attach the section to.
+
+    Returns:
+        None
+    """
     tab1 = parent
     # === Detector Parameters Section ===
     window.DF_frame = ctk.CTkFrame(tab1)
@@ -479,6 +641,17 @@ def add_DF_section_general(window, parent):
         help_btn.grid(row=row+1, column=col*2+1, sticky="w", padx=(0, 10), pady=(0, 10))
 
 def add_geometry_section_general(window, parent, geom_params):
+    """
+    Adds the setup geometrical parameters section to the UI.
+
+    Args:
+        window: The main window object.
+        parent: The parent UI element to attach the section to.
+        geom_params (list): List of geometry parameter names.
+
+    Returns:
+        None
+    """
     tab1 = parent
     # === Detector Parameters Section ===
     window.geom_frame = ctk.CTkFrame(tab1)
@@ -508,6 +681,16 @@ def add_geometry_section_general(window, parent, geom_params):
         help_btn.grid(row=row+1, column=col*2+1, sticky="w", padx=(0, 10), pady=(0, 10))
 
 def add_ct_section_general(window, parent):
+    """
+    Adds the CT parameters section to the UI.
+
+    Args:
+        window: The main window object.
+        parent: The parent UI element to attach the section to.
+
+    Returns:
+        None
+    """
     tab1 = parent
     # === Detector Parameters Section ===
     window.ct_frame = ctk.CTkFrame(tab1)
@@ -538,7 +721,15 @@ def add_ct_section_general(window, parent):
         help_btn.grid(row=row+1, column=col*2+1, sticky="w", padx=(0, 10), pady=(0, 10))
 
 def run_ext_sim_general(window):
+    """
+    Runs an external simulation on a remote server via SSH and SFTP, uploading only changed files and launching the script.
 
+    Args:
+        window: The main window object.
+
+    Returns:
+        None
+    """
     dict_server = np.load("remote_simulations/temp/dict_server.npy", allow_pickle=True).item()
 
     remote_user = dict_server["remote_user"]

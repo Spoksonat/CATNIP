@@ -80,7 +80,6 @@ class UMPARetrievalWindow(ctk.CTk):
 
         button_frame = ctk.CTkFrame(self, fg_color="transparent")
         button_frame.pack()
-        ctk.CTkButton(button_frame, text="Load from text files", width=150, command=self.load_from_txt).pack(side="left", padx=20)
         ctk.CTkButton(button_frame, text="Load from npy files", width=150, command=self.load_from_npy).pack(side="left", padx=20)
 
         # === Progress Bar Frame ===

@@ -11,6 +11,16 @@ from skimage.draw import disk
 class SimulationSBI:
 
     def __init__(self, dict_params, grat, samp, E, theta_y=0) -> None:
+        """
+        Initializes the SimulationSBI class for Sandpaper-based simulation.
+
+        Args:
+            dict_params (dict): Dictionary of simulation parameters.
+            grat: Grating object.
+            samp: Sample object.
+            E (float): Energy value in keV.
+            theta_y (float, optional): Rotation angle around the Y axis. Default is 0.
+        """
 
         self.grat = grat
         self.samp = samp
@@ -32,12 +42,41 @@ class SimulationSBI:
         self.theta_y = theta_y
     
     def inter_sandpaper_det(self, wf: np.ndarray, grating_t: np.ndarray) -> np.ndarray:
+        """
+        Applies the sandpaper interaction to the wavefront.
+
+        Args:
+            wf (np.ndarray): Input wavefront.
+            grating_t (np.ndarray): Sandpaper thickness map.
+
+        Returns:
+            np.ndarray: Modified wavefront after sandpaper interaction.
+        """
         return wf*np.exp(-1j*self.k*(self.grat.delta_samp*grating_t + self.grat.delta_bkg*self.grat.t_m*np.ones(self.grat.img_size)))*np.exp(-(self.grat.mu_samp*grating_t + self.grat.mu_bkg*self.grat.t_m*np.ones(self.grat.img_size))/2)
     
     def inter_samp_det(self, wf: np.ndarray, t_map_1: np.ndarray, t_map_2: np.ndarray, t_map_3: np.ndarray) -> np.ndarray:
+        """
+        Applies the sample interaction to the wavefront.
+
+        Args:
+            wf (np.ndarray): Input wavefront.
+            t_map_1, t_map_2, t_map_3 (np.ndarray): Thickness maps for sample regions.
+
+        Returns:
+            np.ndarray: Modified wavefront after sample interaction.
+        """
         return wf*np.exp(-1j* self.k * (self.samp.delta_1*t_map_1 + self.samp.delta_2*t_map_2 + self.samp.delta_3*t_map_3)) * np.exp(-(self.samp.mu_1*t_map_1 + self.samp.mu_2*t_map_2 + self.samp.mu_3*t_map_3)/2)
 
     def fres_ker_fourier(self, z):
+        """
+        Computes the Fresnel kernel in Fourier space for propagation.
+
+        Args:
+            z (float): Propagation distance.
+
+        Returns:
+            np.ndarray: Fresnel kernel in Fourier space.
+        """
         u = 2 * np.pi * scipy.fft.fftfreq(self.grat.img_size[1]) / self.grat.sim_pixel_m
         v = 2 * np.pi * scipy.fft.fftfreq(self.grat.img_size[0]) / self.grat.sim_pixel_m
         UU, VV = np.meshgrid(u, v)
@@ -46,6 +85,16 @@ class SimulationSBI:
         return fres_ker_fou
 
     def propagation(self, wf: np.ndarray, z: float) -> np.ndarray:
+        """
+        Propagates the wavefront by a distance z using the Fresnel kernel.
+
+        Args:
+            wf (np.ndarray): Input wavefront.
+            z (float): Propagation distance.
+
+        Returns:
+            np.ndarray: Propagated wavefront.
+        """
         
         fres_ker_fou = self.fres_ker_fourier(z=z)
         wf_prop = scipy.fft.ifftn(scipy.fft.fftn(wf, fres_ker_fou.shape, workers = -1)*fres_ker_fou, workers = -1)
@@ -53,12 +102,30 @@ class SimulationSBI:
         return wf_prop
     
     def binning(self, image: np.ndarray) -> np.ndarray:
+        """
+        Applies binning to the image according to the binning factor.
+
+        Args:
+            image (np.ndarray): Input image.
+
+        Returns:
+            np.ndarray: Binned image.
+        """
         new_shape = (image.shape[0] // self.binning_factor, image.shape[1] // self.binning_factor)
         binned_image = image.reshape(new_shape[0], self.binning_factor, new_shape[1], self.binning_factor).mean(axis=(1, 3))
 
         return binned_image
     
     def convolve_PSF(self, image: np.ndarray) -> np.ndarray:
+        """
+        Convolves the image with a point spread function (PSF).
+
+        Args:
+            image (np.ndarray): Input image.
+
+        Returns:
+            np.ndarray: Image after PSF convolution.
+        """
         x, y = np.arange(self.psf_size[1]), np.arange(self.psf_size[0])
         XX, YY = np.meshgrid(x,y)
         psf = np.exp(-4*np.log(2)*(XX**2 + YY**2)/self.fwhm**2)
@@ -66,6 +133,15 @@ class SimulationSBI:
         return np.abs(image_conv)
     
     def convolve_PSF_total(self, image: np.ndarray) -> np.ndarray:
+        """
+        Applies system PSF convolution, considering source geometry.
+
+        Args:
+            image (np.ndarray): Input image.
+
+        Returns:
+            np.ndarray: Image after system PSF convolution.
+        """
         if(self.type_of_source == "Cone"):
             M_samp = (self.d_source_samp + self.d_samp_det)/self.d_source_samp
             f_pix = (self.f_um*1e-6/self.grat.sim_pixel_m)
@@ -81,6 +157,17 @@ class SimulationSBI:
         return convolved_image
     
     def add_dark_field(self, image, t_map_1, patch_size=32):
+        """
+        Adds dark-field blur to the image based on sample thickness.
+
+        Args:
+            image (np.ndarray): Input image.
+            t_map_1 (np.ndarray): Thickness map for region 1.
+            patch_size (int, optional): Size of the patch for local blurring.
+
+        Returns:
+            np.ndarray: Image with dark-field effect.
+        """
         # sigma = z_prop*theta/pixel_size, theta = scattering angle
         theta_map = 10e-6*t_map_1
         blurred = np.zeros_like(image)
@@ -96,6 +183,16 @@ class SimulationSBI:
         return blurred
     
     def create_ref_samp(self, bin_grat: np.ndarray, t_map_1: np.ndarray, t_map_2: np.ndarray, t_map_3: np.ndarray) -> np.ndarray:
+        """
+        Simulates reference and sample images for a single grating position.
+
+        Args:
+            bin_grat (np.ndarray): Binary grating pattern.
+            t_map_1, t_map_2, t_map_3 (np.ndarray): Thickness maps for sample regions.
+
+        Returns:
+            tuple: Reference and sample images.
+        """
         
         if(self.type_of_source == "Cone"):
             M_1 = (self.d_source_grat + self.d_grat_det)/self.d_source_grat
@@ -133,6 +230,12 @@ class SimulationSBI:
         return I_ref, I_samp
     
     def create_ref_samp_stacks(self) -> np.ndarray:
+        """
+        Simulates stacks of reference and sample images for all grating positions.
+
+        Returns:
+            tuple: Arrays of reference and sample images for all positions.
+        """
 
         grat_array = self.grat.obtain_grat_array()
         t_map_1, t_map_2, t_map_3 = self.samp.create_sample(self.theta_y)
@@ -150,7 +253,16 @@ class SimulationSBI:
         return I_refs, I_samps
     
     def scale(self, img, M):
+        """
+        Scales the image according to the magnification factor.
 
+        Args:
+            img (np.ndarray): Input image.
+            M (float): Magnification factor.
+
+        Returns:
+            np.ndarray: Scaled image.
+        """
         if(self.type_of_source == "Cone"):
             #h, w = img.shape[:2]
             #zoom_factor = M
@@ -213,6 +325,16 @@ class SimulationSBI:
 class SimulationSGBI:
 
     def __init__(self, dict_params, grat, samp, E, theta_y=0) -> None:
+        """
+        Initializes the SimulationSGBI class for SGBI simulation.
+
+        Args:
+            dict_params (dict): Dictionary of simulation parameters.
+            grat: Grating object.
+            samp: Sample object.
+            E (float): Energy value in keV.
+            theta_y (float, optional): Rotation angle around the Y axis. Default is 0.
+        """
 
         self.grat = grat
         self.samp = samp
@@ -235,6 +357,16 @@ class SimulationSGBI:
         self.theta_y = theta_y
     
     def inter_grat_det(self, wf: np.ndarray, bin_grat: np.ndarray) -> np.ndarray:
+        """
+        Applies the grating interaction to the wavefront.
+
+        Args:
+            wf (np.ndarray): Input wavefront.
+            bin_grat (np.ndarray): Binary grating pattern.
+
+        Returns:
+            np.ndarray: Modified wavefront after grating interaction.
+        """
         if(self.dict_params["Phase shift"] != "Auto"):
             return wf*np.exp(-1j* self.grat.ph_shift*bin_grat)*np.exp(-(self.grat.mu/2)*self.grat.t_m*bin_grat)
         else:
@@ -242,9 +374,28 @@ class SimulationSGBI:
 
     
     def inter_samp_det(self, wf: np.ndarray, t_map_1: np.ndarray, t_map_2: np.ndarray, t_map_3: np.ndarray) -> np.ndarray:
+        """
+        Applies the sample interaction to the wavefront.
+
+        Args:
+            wf (np.ndarray): Input wavefront.
+            t_map_1, t_map_2, t_map_3 (np.ndarray): Thickness maps for sample regions.
+
+        Returns:
+            np.ndarray: Modified wavefront after sample interaction.
+        """
         return wf*np.exp(-1j* self.k * (self.samp.delta_1*t_map_1 + self.samp.delta_2*t_map_2 + self.samp.delta_3*t_map_3)) * np.exp(-(self.samp.mu_1*t_map_1 + self.samp.mu_2*t_map_2 + self.samp.mu_3*t_map_3)/2)
 
     def fres_ker_fourier(self, z):
+        """
+        Computes the Fresnel kernel in Fourier space for propagation.
+
+        Args:
+            z (float): Propagation distance.
+
+        Returns:
+            np.ndarray: Fresnel kernel in Fourier space.
+        """
         u = 2 * np.pi * scipy.fft.fftfreq(self.grat.img_size[1]) / self.grat.sim_pixel_m
         v = 2 * np.pi * scipy.fft.fftfreq(self.grat.img_size[0]) / self.grat.sim_pixel_m
         UU, VV = np.meshgrid(u, v)
@@ -253,6 +404,16 @@ class SimulationSGBI:
         return fres_ker_fou
 
     def propagation(self, wf: np.ndarray, z: float) -> np.ndarray:
+        """
+        Propagates the wavefront by a distance z using the Fresnel kernel.
+
+        Args:
+            wf (np.ndarray): Input wavefront.
+            z (float): Propagation distance.
+
+        Returns:
+            np.ndarray: Propagated wavefront.
+        """
         
         fres_ker_fou = self.fres_ker_fourier(z=z)
         wf_prop = scipy.fft.ifftn(scipy.fft.fftn(wf, fres_ker_fou.shape, workers = -1)*fres_ker_fou, workers = -1)
@@ -260,12 +421,30 @@ class SimulationSGBI:
         return wf_prop
     
     def binning(self, image: np.ndarray) -> np.ndarray:
+        """
+        Applies binning to the image according to the binning factor.
+
+        Args:
+            image (np.ndarray): Input image.
+
+        Returns:
+            np.ndarray: Binned image.
+        """
         new_shape = (image.shape[0] // self.binning_factor, image.shape[1] // self.binning_factor)
         binned_image = image.reshape(new_shape[0], self.binning_factor, new_shape[1], self.binning_factor).mean(axis=(1, 3))
 
         return binned_image
     
     def convolve_PSF(self, image: np.ndarray) -> np.ndarray:
+        """
+        Convolves the image with a point spread function (PSF).
+
+        Args:
+            image (np.ndarray): Input image.
+
+        Returns:
+            np.ndarray: Image after PSF convolution.
+        """
         x, y = np.arange(self.psf_size[1]), np.arange(self.psf_size[0])
         XX, YY = np.meshgrid(x,y)
         psf = np.exp(-4*np.log(2)*(XX**2 + YY**2)/self.fwhm**2)
@@ -273,6 +452,15 @@ class SimulationSGBI:
         return np.abs(image_conv)
     
     def convolve_PSF_total(self, image: np.ndarray) -> np.ndarray:
+        """
+        Applies system PSF convolution, considering source geometry.
+
+        Args:
+            image (np.ndarray): Input image.
+
+        Returns:
+            np.ndarray: Image after system PSF convolution.
+        """
         if(self.type_of_source == "Cone"):
             M_samp = (self.d_source_samp + self.d_samp_det)/self.d_source_samp
             f_pix = (self.f_um*1e-6/self.grat.sim_pixel_m)
@@ -287,8 +475,18 @@ class SimulationSGBI:
         convolved_image = gaussian_filter(image, sigma=self.fwhm_sys/2.355)
         return convolved_image
     
-    def add_dark_field(self, image, t_map_1):
+    def add_dark_field(self, image, t_map_1, patch_size=32):
+        """
+        Adds dark-field blur to the image based on sample thickness.
 
+        Args:
+            image (np.ndarray): Input image.
+            t_map_1 (np.ndarray): Thickness map for region 1.
+            patch_size (int, optional): Size of the patch for local blurring.
+
+        Returns:
+            np.ndarray: Image with dark-field effect.
+        """
         ## sigma = z_prop*theta/pixel_size, theta = scattering angle
         blurred = np.zeros_like(image)
         h, w = image.shape
@@ -321,6 +519,16 @@ class SimulationSGBI:
         return blurred
     
     def create_ref_samp(self, bin_grat: np.ndarray, t_map_1: np.ndarray, t_map_2: np.ndarray, t_map_3: np.ndarray) -> np.ndarray:
+        """
+        Simulates reference and sample images for a single grating position.
+
+        Args:
+            bin_grat (np.ndarray): Binary grating pattern.
+            t_map_1, t_map_2, t_map_3 (np.ndarray): Thickness maps for sample regions.
+
+        Returns:
+            tuple: Reference and sample images.
+        """
         
         if(self.type_of_source == "Cone"):
             M_1 = (self.d_source_grat + self.d_grat_det)/self.d_source_grat
@@ -331,7 +539,7 @@ class SimulationSGBI:
 
 
         wf_bg = self.propagation(wf=self.wf_init, z=self.d_source_grat)
-        wf_grat = self.inter_grat_det(wf=wf_bg, bin_grat=bin_grat)
+        wf_grat = self.inter_sandpaper_det(wf=wf_bg, grating_t=bin_grat)
         
         wf_ref = wf_grat
         wf_ref = self.propagation(wf=wf_ref, z=self.d_grat_det/M_1)#self.d_grat_samp+self.samp.t_m
@@ -357,6 +565,12 @@ class SimulationSGBI:
         return I_ref, I_samp
     
     def create_ref_samp_stacks(self) -> np.ndarray:
+        """
+        Simulates stacks of reference and sample images for all grating positions.
+
+        Returns:
+            tuple: Arrays of reference and sample images for all positions.
+        """
 
         grat_array = self.grat.obtain_grat_array()
         t_map_1, t_map_2, t_map_3 = self.samp.create_sample(self.theta_y)
@@ -374,7 +588,16 @@ class SimulationSGBI:
         return I_refs, I_samps
     
     def scale(self, img, M):
+        """
+        Scales the image according to the magnification factor.
 
+        Args:
+            img (np.ndarray): Input image.
+            M (float): Magnification factor.
+
+        Returns:
+            np.ndarray: Scaled image.
+        """
         if(self.type_of_source == "Cone"):
             #h, w = img.shape[:2]
             #zoom_factor = M
@@ -437,6 +660,16 @@ class SimulationSGBI:
 class SimulationEI:
 
     def __init__(self, dict_params, grat, samp, E, theta_y=0) -> None:
+        """
+        Initializes the SimulationEI class for Edge Illumination simulation.
+
+        Args:
+            dict_params (dict): Dictionary of simulation parameters.
+            grat: Grating object.
+            samp: Sample object.
+            E (float): Energy value in keV.
+            theta_y (float, optional): Rotation angle around the Y axis. Default is 0.
+        """
 
         self.grat = grat
         self.samp = samp
@@ -461,12 +694,41 @@ class SimulationEI:
         self.theta_y = theta_y
 
     def inter_grat_det(self, wf: np.ndarray, bin_grat: np.ndarray) -> np.ndarray:
+        """
+        Applies the grating interaction to the wavefront.
+
+        Args:
+            wf (np.ndarray): Input wavefront.
+            bin_grat (np.ndarray): Binary grating pattern.
+
+        Returns:
+            np.ndarray: Modified wavefront after grating interaction.
+        """
         return wf*np.exp(-1j* self.grat.delta*self.k*self.grat.t_m*bin_grat)*np.exp(-(self.grat.mu/2)*self.grat.t_m*bin_grat)
     
     def inter_samp_det(self, wf: np.ndarray, t_map_1: np.ndarray, t_map_2: np.ndarray, t_map_3: np.ndarray) -> np.ndarray:
+        """
+        Applies the sample interaction to the wavefront.
+
+        Args:
+            wf (np.ndarray): Input wavefront.
+            t_map_1, t_map_2, t_map_3 (np.ndarray): Thickness maps for sample regions.
+
+        Returns:
+            np.ndarray: Modified wavefront after sample interaction.
+        """
         return wf*np.exp(-1j* self.k * (self.samp.delta_1*t_map_1 + self.samp.delta_2*t_map_2 + self.samp.delta_3*t_map_3)) * np.exp(-(self.samp.mu_1*t_map_1 + self.samp.mu_2*t_map_2 + self.samp.mu_3*t_map_3)/2)
 
     def fres_ker_fourier(self, z):
+        """
+        Computes the Fresnel kernel in Fourier space for propagation.
+
+        Args:
+            z (float): Propagation distance.
+
+        Returns:
+            np.ndarray: Fresnel kernel in Fourier space.
+        """
         u = 2 * np.pi * scipy.fft.fftfreq(self.grat.img_size[1]) / self.grat.sim_pixel_m
         v = 2 * np.pi * scipy.fft.fftfreq(self.grat.img_size[0]) / self.grat.sim_pixel_m
         UU, VV = np.meshgrid(u, v)
@@ -475,6 +737,16 @@ class SimulationEI:
         return fres_ker_fou
 
     def propagation(self, wf: np.ndarray, z: float) -> np.ndarray:
+        """
+        Propagates the wavefront by a distance z using the Fresnel kernel.
+
+        Args:
+            wf (np.ndarray): Input wavefront.
+            z (float): Propagation distance.
+
+        Returns:
+            np.ndarray: Propagated wavefront.
+        """
         
         fres_ker_fou = self.fres_ker_fourier(z=z)
         wf_prop = scipy.fft.ifftn(scipy.fft.fftn(wf, fres_ker_fou.shape, workers = -1)*fres_ker_fou, workers = -1)
@@ -482,12 +754,30 @@ class SimulationEI:
         return wf_prop
     
     def binning(self, image: np.ndarray) -> np.ndarray:
+        """
+        Applies binning to the image according to the binning factor.
+
+        Args:
+            image (np.ndarray): Input image.
+
+        Returns:
+            np.ndarray: Binned image.
+        """
         new_shape = (image.shape[0] // self.binning_factor, image.shape[1] // self.binning_factor)
         binned_image = image.reshape(new_shape[0], self.binning_factor, new_shape[1], self.binning_factor).mean(axis=(1, 3))
 
         return binned_image
     
     def convolve_PSF(self, image: np.ndarray) -> np.ndarray:
+        """
+        Convolves the image with a point spread function (PSF).
+
+        Args:
+            image (np.ndarray): Input image.
+
+        Returns:
+            np.ndarray: Image after PSF convolution.
+        """
         x, y = np.arange(self.psf_size[1]), np.arange(self.psf_size[0])
         XX, YY = np.meshgrid(x,y)
         psf = np.exp(-4*np.log(2)*(XX**2 + YY**2)/self.fwhm**2)
@@ -495,6 +785,15 @@ class SimulationEI:
         return np.abs(image_conv)
     
     def convolve_PSF_total(self, image: np.ndarray) -> np.ndarray:
+        """
+        Applies system PSF convolution, considering source geometry.
+
+        Args:
+            image (np.ndarray): Input image.
+
+        Returns:
+            np.ndarray: Image after system PSF convolution.
+        """
         if(self.type_of_source == "Cone"):
             M_samp = (self.d_source_samp + self.d_samp_det)/self.d_source_samp
             f_pix = (self.f_um*1e-6/self.grat.sim_pixel_m)
@@ -509,8 +808,18 @@ class SimulationEI:
         convolved_image = gaussian_filter(image, sigma=self.fwhm_sys/2.355)
         return convolved_image
     
-    def add_dark_field(self, image, t_map_1):
+    def add_dark_field(self, image, t_map_1, patch_size=32):
+        """
+        Adds dark-field blur to the image based on sample thickness.
 
+        Args:
+            image (np.ndarray): Input image.
+            t_map_1 (np.ndarray): Thickness map for region 1.
+            patch_size (int, optional): Size of the patch for local blurring.
+
+        Returns:
+            np.ndarray: Image with dark-field effect.
+        """
         ## sigma = z_prop*theta/pixel_size, theta = scattering angle
         blurred = np.zeros_like(image)
         h, w = image.shape
@@ -543,6 +852,16 @@ class SimulationEI:
         return blurred
     
     def create_ref_samp(self, bin_grat: np.ndarray, t_map_1: np.ndarray, t_map_2: np.ndarray, t_map_3: np.ndarray) -> np.ndarray:
+        """
+        Simulates reference and sample images for a single grating position.
+
+        Args:
+            bin_grat (np.ndarray): Binary grating pattern.
+            t_map_1, t_map_2, t_map_3 (np.ndarray): Thickness maps for sample regions.
+
+        Returns:
+            tuple: Reference and sample images.
+        """
         
         if(self.type_of_source == "Cone"):
             M_1 = (self.d_source_grat + self.d_grat_det)/self.d_source_grat
@@ -553,7 +872,7 @@ class SimulationEI:
 
 
         wf_bg = self.propagation(wf=self.wf_init, z=self.d_source_grat)
-        wf_grat = self.inter_grat_det(wf=wf_bg, bin_grat=bin_grat)
+        wf_grat = self.inter_sandpaper_det(wf=wf_bg, grating_t=bin_grat)
         
         wf_ref = wf_grat
         wf_ref = self.propagation(wf=wf_ref, z=self.d_grat_det/M_1)#self.d_grat_samp+self.samp.t_m
@@ -573,12 +892,18 @@ class SimulationEI:
         I_samp = np.abs(wf_samp)**2
         I_samp = self.binning(I_samp)
         I_samp = self.convolve_PSF_total(image=I_samp)
-        I_samp = self.add_dark_field(I_samp, t_map_1=t_map_1)
+        I_samp = self.add_dark_field(image=I_samp, t_map_1=t_map_1)
         I_samp = np.random.poisson(lam=self.n_ph*I_samp)
         
         return I_ref, I_samp
     
     def create_ref_samp_stacks(self) -> np.ndarray:
+        """
+        Simulates stacks of reference and sample images for all grating positions.
+
+        Returns:
+            tuple: Arrays of reference and sample images for all positions.
+        """
 
         grat_array = self.grat.obtain_grat_array()
         t_map_1, t_map_2, t_map_3 = self.samp.create_sample(self.theta_y)
@@ -595,31 +920,37 @@ class SimulationEI:
 
         return I_refs, I_samps
     
-    
     def scale(self, img, M):
+        """
+        Scales the image according to the magnification factor.
 
+        Args:
+            img (np.ndarray): Input image.
+            M (float): Magnification factor.
+
+        Returns:
+            np.ndarray: Scaled image.
+        """
         if(self.type_of_source == "Cone"):
-            """
-            h, w = img.shape[:2]
-            zoom_factor = M
-            # For multichannel images we don't want to apply the zoom factor to the RGB
-            # dimension, so instead we create a tuple of zoom factors, one per array
-            # dimension, with 1's for any trailing dimensions after the width and height.
-            zoom_tuple = (zoom_factor,) * 2 + (1,) * (img.ndim - 2)
-            # Bounding box of the zoomed-in region within the input array
-            zh = int(np.round(h / zoom_factor))
-            zw = int(np.round(w / zoom_factor))
-            top = (h - zh) // 2
-            left = (w - zw) // 2
-    
-            out = zoom(img[top:top+zh, left:left+zw], zoom_tuple, order=0)
-    
-            # `out` might still be slightly larger than `img` due to rounding, so
-            # trim off any extra pixels at the edges
-            trim_top = ((out.shape[0] - h) // 2)
-            trim_left = ((out.shape[1] - w) // 2)
-            out = out[trim_top:trim_top+h, trim_left:trim_left+w]
-            """
+            #h, w = img.shape[:2]
+            #zoom_factor = M
+            ## For multichannel images we don't want to apply the zoom factor to the RGB
+            ## dimension, so instead we create a tuple of zoom factors, one per array
+            ## dimension, with 1's for any trailing dimensions after the width and height.
+            #zoom_tuple = (zoom_factor,) * 2 + (1,) * (img.ndim - 2)
+            ## Bounding box of the zoomed-in region within the input array
+            #zh = int(np.round(h / zoom_factor))
+            #zw = int(np.round(w / zoom_factor))
+            #top = (h - zh) // 2
+            #left = (w - zw) // 2
+    #
+            #out = zoom(img[top:top+zh, left:left+zw], zoom_tuple, order=0)
+    #
+            ## `out` might still be slightly larger than `img` due to rounding, so
+            ## trim off any extra pixels at the edges
+            #trim_top = ((out.shape[0] - h) // 2)
+            #trim_left = ((out.shape[1] - w) // 2)
+            #out = out[trim_top:trim_top+h, trim_left:trim_left+w]
 
             zoom_factor = M
             M, N = img.shape
@@ -662,6 +993,15 @@ class SimulationEI:
 class SimulationInline:
 
     def __init__(self, dict_params, samp, E, theta_y) -> None:
+        """
+        Initializes the SimulationInline class for inline simulation.
+
+        Args:
+            dict_params (dict): Dictionary of simulation parameters.
+            samp: Sample object.
+            E (float): Energy value in keV.
+            theta_y (float): Rotation angle around the Y axis.
+        """
 
         self.samp = samp
         self.type_of_source = dict_params["Source geometry"]
@@ -679,9 +1019,28 @@ class SimulationInline:
         self.theta_y = theta_y
     
     def inter_samp_det(self, wf: np.ndarray, t_map_1: np.ndarray, t_map_2: np.ndarray, t_map_3: np.ndarray) -> np.ndarray:
+        """
+        Applies the sample interaction to the wavefront.
+
+        Args:
+            wf (np.ndarray): Input wavefront.
+            t_map_1, t_map_2, t_map_3 (np.ndarray): Thickness maps for sample regions.
+
+        Returns:
+            np.ndarray: Modified wavefront after sample interaction.
+        """
         return wf*np.exp(-1j* self.k * (self.samp.delta_1*t_map_1 + self.samp.delta_2*t_map_2 + self.samp.delta_3*t_map_3)) * np.exp(-(self.samp.mu_1*t_map_1 + self.samp.mu_2*t_map_2 + self.samp.mu_3*t_map_3)/2)
 
     def fres_ker_fourier(self, z):
+        """
+        Computes the Fresnel kernel in Fourier space for propagation.
+
+        Args:
+            z (float): Propagation distance.
+
+        Returns:
+            np.ndarray: Fresnel kernel in Fourier space.
+        """
         u = 2 * np.pi * scipy.fft.fftfreq(self.samp.img_size[1]) / self.samp.sim_pixel_m
         v = 2 * np.pi * scipy.fft.fftfreq(self.samp.img_size[0]) / self.samp.sim_pixel_m
         UU, VV = np.meshgrid(u, v)
@@ -690,6 +1049,16 @@ class SimulationInline:
         return fres_ker_fou
 
     def propagation(self, wf: np.ndarray, z: float) -> np.ndarray:
+        """
+        Propagates the wavefront by a distance z using the Fresnel kernel.
+
+        Args:
+            wf (np.ndarray): Input wavefront.
+            z (float): Propagation distance.
+
+        Returns:
+            np.ndarray: Propagated wavefront.
+        """
         
         fres_ker_fou = self.fres_ker_fourier(z=z)
         wf_prop = scipy.fft.ifftn(scipy.fft.fftn(wf, fres_ker_fou.shape, workers = -1)*fres_ker_fou, workers = -1)
@@ -697,12 +1066,30 @@ class SimulationInline:
         return wf_prop
     
     def binning(self, image: np.ndarray) -> np.ndarray:
+        """
+        Applies binning to the image according to the binning factor.
+
+        Args:
+            image (np.ndarray): Input image.
+
+        Returns:
+            np.ndarray: Binned image.
+        """
         new_shape = (image.shape[0] // self.binning_factor, image.shape[1] // self.binning_factor)
         binned_image = image.reshape(new_shape[0], self.binning_factor, new_shape[1], self.binning_factor).mean(axis=(1, 3))
 
         return binned_image
     
     def convolve_PSF(self, image: np.ndarray) -> np.ndarray:
+        """
+        Convolves the image with a point spread function (PSF).
+
+        Args:
+            image (np.ndarray): Input image.
+
+        Returns:
+            np.ndarray: Image after PSF convolution.
+        """
         x, y = np.arange(self.psf_size[1]), np.arange(self.psf_size[0])
         XX, YY = np.meshgrid(x,y)
         psf = np.exp(-4*np.log(2)*(XX**2 + YY**2)/self.fwhm**2)
@@ -710,6 +1097,15 @@ class SimulationInline:
         return np.abs(image_conv)
     
     def convolve_PSF_total(self, image: np.ndarray) -> np.ndarray:
+        """
+        Applies system PSF convolution, considering source geometry.
+
+        Args:
+            image (np.ndarray): Input image.
+
+        Returns:
+            np.ndarray: Image after system PSF convolution.
+        """
         if(self.type_of_source == "Cone"):
             M_samp = (self.d_source_samp + self.d_samp_det)/self.d_source_samp
             f_pix = (self.f_um*1e-6/self.grat.sim_pixel_m)
@@ -725,6 +1121,12 @@ class SimulationInline:
         return convolved_image
     
     def create_ref_samp(self) -> np.ndarray:
+        """
+        Simulates reference and sample images for the inline setup.
+
+        Returns:
+            tuple: Reference and sample images.
+        """
 
         t_map_1, t_map_2, t_map_3 = self.samp.create_sample(self.theta_y)
         
@@ -758,7 +1160,16 @@ class SimulationInline:
         return I_ref, I_samp
       
     def scale(self, img, M):
+        """
+        Scales the image according to the magnification factor.
 
+        Args:
+            img (np.ndarray): Input image.
+            M (float): Magnification factor.
+
+        Returns:
+            np.ndarray: Scaled image.
+        """
         if(self.type_of_source == "Cone"):
             """
             h, w = img.shape[:2]

@@ -10,7 +10,7 @@ class MainWindow(ctk.CTk):
         super().__init__()
         self.controller = controller
         self.protocol("WM_DELETE_WINDOW", self.on_close)
-        self.title("XRsim")
+        self.title("CATNIP")
         self.geometry("800x250")
 
         ctk.CTkLabel(self, text="Welcome to CATNIP", font=("Segoe UI", 20, "bold")).pack(pady=30)

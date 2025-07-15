@@ -37,11 +37,23 @@ class GratingEI:
         self.mu = self.mu_mass*self.mat_density*1e2
     
     def create_fringe(self) -> np.ndarray:
+        """
+        Creates a binary mask representing a single fringe of the grating.
+
+        Returns:
+            np.ndarray: Binary mask of the fringe.
+        """
         self.fringe_width_pix = int(self.fringe_width_um * 1e-6/self.sim_pixel_m)
         mask = np.ones((self.img_size[0], self.fringe_width_pix))
         return mask
     
     def create_bin_grat(self) -> np.ndarray:
+        """
+        Generates the binary grating pattern using the fringe mask and stores it in self.bin_grat.
+
+        Returns:
+            np.ndarray: Binary grating pattern.
+        """
         grating = np.zeros(self.img_size)
         fringe = self.create_fringe()
         grating[int(self.img_size[0]/2), int(self.shift_x_um*1e-6/self.sim_pixel_m)::self.px_pix] = 1
@@ -50,6 +62,9 @@ class GratingEI:
         self.bin_grat = (grating > 0.01).astype(int)
 
     def create_bin_grat_2_mask(self):
+        """
+        Generates a binary grating pattern with two shifted masks and stores it in self.bin_grat.
+        """
         grating_1 = np.zeros(self.img_size)
         grating_2 = np.zeros(self.img_size)
 
@@ -69,6 +84,12 @@ class GratingEI:
         self.bin_grat = ((grating_1 > 0.01).astype(int)) + ((grating_2 > 0.01).astype(int))
     
     def grat_pos_lin(self) -> np.ndarray:
+        """
+        Calculates linear positions for grating steps.
+
+        Returns:
+            np.ndarray: Array of positions for each step.
+        """
         step_X = int(self.px_pix/self.N)#int(self.px_pix - self.fringe_width_pix)#int(self.px_pix/self.N)
         x = step_X * np.arange(self.N)
         positions = []
@@ -82,7 +103,12 @@ class GratingEI:
         return positions
         
     def obtain_grat_array(self) -> np.ndarray:
+        """
+        Generates an array of shifted grating patterns according to calculated positions.
 
+        Returns:
+            np.ndarray: Array of shifted grating patterns.
+        """
         self.create_bin_grat()
 
         grat_array = []
@@ -138,6 +164,12 @@ class GratingSGBI:
         self.mu = self.mu_mass*self.mat_density*1e2
 
     def create_hole(self) -> np.ndarray:
+        """
+        Creates a binary mask for a hole with a specified number of vertices.
+
+        Returns:
+            np.ndarray: Binary mask of the hole.
+        """
         self.radius_pix = int(self.dc * self.px_um * 1e-6 / self.sim_pixel_m)
         cx, cy = self.radius_pix, self.radius_pix
         mask = np.zeros((2*self.radius_pix+1, 2*self.radius_pix+1))
@@ -160,7 +192,12 @@ class GratingSGBI:
     
     
     def create_bin_grat(self) -> np.ndarray:
+        """
+        Generates the binary grating pattern using the hole mask and stores it in self.bin_grat.
 
+        Returns:
+            np.ndarray: Binary grating pattern.
+        """
         grating = np.zeros(self.img_size)
 
         hole = self.create_hole()
@@ -172,6 +209,12 @@ class GratingSGBI:
         self.bin_grat = (grating < 0.01).astype(int)
         
     def grat_pos_serpent(self) -> np.ndarray:
+        """
+        Calculates serpent-like positions for grating steps.
+
+        Returns:
+            np.ndarray: Array of positions for each step in serpent-like order.
+        """
         step_X, step_Y = int(self.px_pix/self.N), int(self.py_pix/self.N)
         x = step_X * np.arange(self.N)
         y = step_Y * np.arange(self.N)
@@ -191,6 +234,12 @@ class GratingSGBI:
         return positions
     
     def grat_pos_serpent_shear(self) -> np.ndarray:
+        """
+        Calculates serpent-like positions with shear for grating steps.
+
+        Returns:
+            np.ndarray: Array of positions for each step in serpent-like shear order.
+        """
         step_X, step_Y = int(self.px_pix/self.N), int((self.py_pix/2)/self.N)
         x = step_X * np.arange(self.N)
         y = step_Y * np.arange(self.N)
@@ -214,7 +263,12 @@ class GratingSGBI:
         return positions
         
     def obtain_grat_array(self) -> np.ndarray:
+        """
+        Generates an array of shifted grating patterns according to serpent-like shear positions.
 
+        Returns:
+            np.ndarray: Array of shifted grating patterns.
+        """
         self.create_bin_grat()
 
         grat_array = []
@@ -270,12 +324,29 @@ class Sandpaper:
         self.mu_bkg = self.mu_mass_bkg*self.bkg_density*1e2
 
     def create_sph(self, R):
+        """
+        Creates a spherical mask and projects it along one axis.
+
+        Args:
+            R (int): Radius of the sphere in pixels.
+
+        Returns:
+            np.ndarray: 2D projection of the sphere.
+        """
         sph = ellipsoid(R,R,R).astype(int)
         proj_sph = np.sum(sph, axis=-1)
         return proj_sph
     
     def random_no_overlap(self, scale_factor):
-    
+        """
+        Generates random positions for grains without overlap.
+
+        Args:
+            scale_factor (float): Scaling factor for random seed.
+
+        Returns:
+            tuple: Arrays of x and y coordinates for grain centers.
+        """
         np.random.seed(int(100/scale_factor))
 
         x_range = np.arange(2*self.r_pix + 1, self.img_size[1] - (2*self.r_pix + 1))  # x-values: 0 to 199
@@ -312,7 +383,15 @@ class Sandpaper:
         return cX, cY
     
     def create_grat(self, ind_sandpaper) -> np.ndarray:
+        """
+        Generates a sandpaper pattern for a given index.
 
+        Args:
+            ind_sandpaper (int): Index of the sandpaper.
+
+        Returns:
+            np.ndarray: Pattern for the sandpaper.
+        """
         grating = np.zeros(self.img_size, dtype=np.complex128)
 
         np.random.seed(ind_sandpaper)
@@ -340,6 +419,12 @@ class Sandpaper:
         self.grat = grating
     
     def grat_pos_lab(self) -> np.ndarray:
+        """
+        Calculates positions for sandpaper steps in a stair-wise manner.
+
+        Returns:
+            np.ndarray: Array of positions for each step.
+        """
         step_X, step_Y = (self.step_size_um*1e-6/self.sim_pixel_m), (self.step_size_um*1e-6/self.sim_pixel_m)
         positions = [np.array([0,0])]
 

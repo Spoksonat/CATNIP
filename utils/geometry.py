@@ -2,41 +2,91 @@ import numpy as np
 import sympy as sp
 
 def R_x(theta):
+    """
+    Returns the rotation matrix in the special Euclidean group SE(3) for a rotation around the X axis.
+
+    Args:
+        theta (float): Rotation angle in degrees.
+
+    Returns:
+        sympy.Matrix: Rotation matrix in SE(3).
+    """
     theta = np.deg2rad(theta)
     return sp.Matrix([
-    [1, 0, 0, 0],
-    [0, sp.cos(theta), -sp.sin(theta), 0],
-    [0, sp.sin(theta),  sp.cos(theta), 0],
-    [0, 0, 0, 1]
+        [1, 0, 0, 0],
+        [0, sp.cos(theta), -sp.sin(theta), 0],
+        [0, sp.sin(theta),  sp.cos(theta), 0],
+        [0, 0, 0, 1]
     ])
 
 def R_y(theta):
+    """
+    Returns the rotation matrix in the special Euclidean group SE(3) for a rotation around the Y axis.
+
+    Args:
+        theta (float): Rotation angle in degrees.
+
+    Returns:
+        sympy.Matrix: Rotation matrix in SE(3).
+    """
     theta = np.deg2rad(theta)
     return sp.Matrix([
-    [sp.cos(theta), 0, sp.sin(theta), 0],
-    [0, 1, 0, 0],
-    [-sp.sin(theta), 0, sp.cos(theta), 0],
-    [0, 0, 0, 1]
+        [sp.cos(theta), 0, sp.sin(theta), 0],
+        [0, 1, 0, 0],
+        [-sp.sin(theta), 0, sp.cos(theta), 0],
+        [0, 0, 0, 1]
     ])
 
 def R_z(theta):
+    """
+    Returns the rotation matrix in the special Euclidean group SE(3) for a rotation around the Z axis.
+
+    Args:
+        theta (float): Rotation angle in degrees.
+
+    Returns:
+        sympy.Matrix: Rotation matrix in SE(3).
+    """
     theta = np.deg2rad(theta)
     return sp.Matrix([
-    [sp.cos(theta), -sp.sin(theta), 0, 0],
-    [sp.sin(theta),  sp.cos(theta), 0, 0],
-    [0, 0, 1, 0],
-    [0, 0, 0, 1]
+        [sp.cos(theta), -sp.sin(theta), 0, 0],
+        [sp.sin(theta),  sp.cos(theta), 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
     ])
 
 def T(x_0, y_0, z_0):
+    """
+    Returns the translation matrix in the special Euclidean group SE(3) for a translation by (x_0, y_0, z_0).
+
+    Args:
+        x_0 (float): Translation in X.
+        y_0 (float): Translation in Y.
+        z_0 (float): Translation in Z.
+
+    Returns:
+        sympy.Matrix: Translation matrix in SE(3).
+    """
     return sp.Matrix([
-    [1, 0, 0, -x_0],
-    [0, 1, 0, -y_0],
-    [0, 0, 1,  -z_0],
-    [0, 0, 0, 1]
-])
+        [1, 0, 0, -x_0],
+        [0, 1, 0, -y_0],
+        [0, 0, 1,  -z_0],
+        [0, 0, 0, 1]
+    ])
 
 def geometric_variables(theta_y, theta_z, img_size, cx=None, cy=None, cz=None):
+    """
+    Computes geometric variables and rotated coordinates for a given image size and rotation.
+
+    Args:
+        theta_y (float): Rotation angle around Y axis in degrees.
+        theta_z (float): Rotation angle around Z axis in degrees.
+        img_size (tuple): Image size (height, width).
+        cx, cy, cz (int, optional): Center coordinates. Defaults to image center.
+
+    Returns:
+        tuple: Geometric variables including meshgrid, symbols, and rotated coordinates.
+    """
     if(cx==None):
         cx = img_size[1]//2
 
@@ -61,6 +111,18 @@ def geometric_variables(theta_y, theta_z, img_size, cx=None, cy=None, cz=None):
     return cx, cy, cz, Y, X, x, y, z, x_r, y_r, z_r
 
 def sympy_to_numpy(projection, img_size, x, y, X, Y):
+    """
+    Converts a sympy expression to a numpy array for a given image size.
+
+    Args:
+        projection (sympy expression): Expression to convert.
+        img_size (tuple): Image size.
+        x, y (sympy.Symbol): Symbolic variables.
+        X, Y (np.ndarray): Meshgrid arrays.
+
+    Returns:
+        np.ndarray: Evaluated projection as a numpy array.
+    """
     # Simplify
     projection = sp.simplify(projection)
     
@@ -78,7 +140,19 @@ def sympy_to_numpy(projection, img_size, x, y, X, Y):
 
 
 def create_ellipse_proj(theta_y, theta_z, img_size, a, b, c, cx=None, cy=None, cz=None):
-    
+    """
+    Creates a projection of an ellipse (or sphere) with given parameters and rotation.
+
+    Args:
+        theta_y (float): Rotation angle around Y axis in degrees.
+        theta_z (float): Rotation angle around Z axis in degrees.
+        img_size (tuple): Image size.
+        a, b, c (float): Semi-axes lengths.
+        cx, cy, cz (int, optional): Center coordinates.
+
+    Returns:
+        np.ndarray: 2D projection of the ellipse.
+    """
     cx, cy, cz, Y, X, x, y, z, x_r, y_r, z_r = geometric_variables(theta_y, theta_z, img_size, cx, cy, cz)
     
     # Sphere equation inside indicator function
@@ -95,7 +169,19 @@ def create_ellipse_proj(theta_y, theta_z, img_size, a, b, c, cx=None, cy=None, c
     return projection
 
 def create_box_proj(theta_y, theta_z, img_size, Lx, Ly, Lz, cx=None, cy=None, cz=None):
+    """
+    Creates a projection of a box (cuboid) with given parameters and rotation.
 
+    Args:
+        theta_y (float): Rotation angle around Y axis in degrees.
+        theta_z (float): Rotation angle around Z axis in degrees.
+        img_size (tuple): Image size.
+        Lx, Ly, Lz (float): Box dimensions.
+        cx, cy, cz (int, optional): Center coordinates.
+
+    Returns:
+        np.ndarray: 2D projection of the box.
+    """
     cx, cy, cz, Y, X, x, y, z, x_r, y_r, z_r = geometric_variables(theta_y, theta_z, img_size, cx, cy, cz)
     
     # Cube indicator (1 inside cube, 0 outside)
@@ -115,7 +201,19 @@ def create_box_proj(theta_y, theta_z, img_size, Lx, Ly, Lz, cx=None, cy=None, cz
     return projection
 
 def create_wedge_proj(theta_y, theta_z, img_size, Lx, Ly, Lz, cx=None, cy=None, cz=None):
+    """
+    Creates a projection of a wedge with given parameters and rotation.
 
+    Args:
+        theta_y (float): Rotation angle around Y axis in degrees.
+        theta_z (float): Rotation angle around Z axis in degrees.
+        img_size (tuple): Image size.
+        Lx, Ly, Lz (float): Wedge dimensions.
+        cx, cy, cz (int, optional): Center coordinates.
+
+    Returns:
+        np.ndarray: 2D projection of the wedge.
+    """
     cx, cy, cz, Y, X, x, y, z, x_r, y_r, z_r = geometric_variables(theta_y, theta_z, img_size, cx, cy, cz)
     
     # Sphere equation inside indicator function
@@ -145,7 +243,20 @@ def create_wedge_proj(theta_y, theta_z, img_size, Lx, Ly, Lz, cx=None, cy=None, 
     return projection
 
 def create_cylinder_proj(theta_y, theta_z, img_size, D, h, cx=None, cy=None, cz=None):
+    """
+    Creates a projection of a cylinder with given parameters and rotation.
 
+    Args:
+        theta_y (float): Rotation angle around Y axis in degrees.
+        theta_z (float): Rotation angle around Z axis in degrees.
+        img_size (tuple): Image size.
+        D (float): Diameter of the cylinder.
+        h (float): Height of the cylinder.
+        cx, cy, cz (int, optional): Center coordinates.
+
+    Returns:
+        np.ndarray: 2D projection of the cylinder.
+    """
     cx, cy, cz, Y, X, x, y, z, x_r, y_r, z_r = geometric_variables(theta_y, theta_z, img_size, cx, cy, cz)
     
     # Sphere equation inside indicator function
@@ -171,7 +282,22 @@ def create_cylinder_proj(theta_y, theta_z, img_size, D, h, cx=None, cy=None, cz=
     return projection
 
 def create_hollow_cylinder_proj(theta_y, theta_z, img_size, D, D_int, h, h_int, cx=None, cy=None, cz=None):
+    """
+    Creates a projection of a hollow cylinder by subtracting inner cylinder from outer cylinder.
 
+    Args:
+        theta_y (float): Rotation angle around Y axis in degrees.
+        theta_z (float): Rotation angle around Z axis in degrees.
+        img_size (tuple): Image size.
+        D (float): Outer diameter.
+        D_int (float): Inner diameter.
+        h (float): Outer height.
+        h_int (float): Inner height.
+        cx, cy, cz (int, optional): Center coordinates.
+
+    Returns:
+        np.ndarray: 2D projection of the hollow cylinder.
+    """
     cylinder_projection = create_cylinder_proj(theta_y=theta_y, theta_z = theta_z, img_size=img_size, D = D, h = h, cx=cx, cy=cy, cz=cz)
     cylinder_int_projection = create_cylinder_proj(theta_y=theta_y, theta_z = theta_z, img_size=img_size, D = D_int, h = h_int, cx=cx, cy=cy, cz=cz)
 
@@ -180,7 +306,20 @@ def create_hollow_cylinder_proj(theta_y, theta_z, img_size, D, D_int, h, h_int, 
     return hollow_cylinder_projection
 
 def create_hollow_cube_proj(theta_y, theta_z, img_size, Lx, Ly, Lz, Lx_int, Ly_int, Lz_int, cx=None, cy=None, cz=None):
+    """
+    Creates a projection of a hollow cube by subtracting inner box from outer box.
 
+    Args:
+        theta_y (float): Rotation angle around Y axis in degrees.
+        theta_z (float): Rotation angle around Z axis in degrees.
+        img_size (tuple): Image size.
+        Lx, Ly, Lz (float): Outer box dimensions.
+        Lx_int, Ly_int, Lz_int (float): Inner box dimensions.
+        cx, cy, cz (int, optional): Center coordinates.
+
+    Returns:
+        np.ndarray: 2D projection of the hollow cube.
+    """
     box_projection = create_box_proj(theta_y=theta_y, theta_z = theta_z, img_size=img_size, Lx=Lx, Ly=Ly, Lz=Lz, cx=cx, cy=cy, cz=cz)
     box_int_projection = create_box_proj(theta_y=theta_y, theta_z = theta_z, img_size=img_size, Lx=Lx_int, Ly=Ly_int, Lz=Lz_int, cx=cx, cy=cy, cz=cz)
 

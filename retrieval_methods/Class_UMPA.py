@@ -3,6 +3,14 @@ from scipy import signal as sig
 
 class UMPA:
     def __init__(self, I_refs, I_samps, dict_params):
+        """
+        Initializes the UMPA class for speckle tracking phase retrieval.
+
+        Args:
+            I_refs (np.ndarray): Reference speckle images stack.
+            I_samps (np.ndarray): Sample speckle images stack.
+            dict_params (dict): Dictionary of retrieval parameters.
+        """
         self.I_refs = I_refs
         self.I_samps = I_samps
 
@@ -150,31 +158,42 @@ class UMPA:
         #return {'T': tr, 'dx': tx, 'dy': ty, 'df': do, 'f': MD}
     
     def wrap_phase(self, image):
+        """
+        Wraps the phase of an image to the interval [-pi, pi].
+
+        Args:
+            image (np.ndarray): Input phase image.
+
+        Returns:
+            np.ndarray: Phase-wrapped image.
+        """
         image_wrap = np.angle(np.exp(1j * image))
         return image_wrap 
     
     def cc(self, A, B, mode='same'):
         """
-        A fast cross-correlation based on scipy.signal.fftconvolve.
-    
-        :param A: The reference image
-        :param B: The template image to match
-        :param mode: one of 'same' (default), 'full' or 'valid' (see help for fftconvolve for more info)
-        :return: The cross-correlation of A and B.
+        Computes fast cross-correlation between two images using FFT convolution.
+
+        Args:
+            A (np.ndarray): Reference image.
+            B (np.ndarray): Template image to match.
+            mode (str, optional): Convolution mode ('same', 'full', 'valid').
+
+        Returns:
+            np.ndarray: Cross-correlation result.
         """
         return sig.fftconvolve(A, B[::-1, ::-1], mode=mode)
     
     
     def quad_fit(self, a):
         """\
-        (c, x0, H) = quad_fit(A)
-        Fits a parabola (or paraboloid) to A and returns the
-        parameters (c, x0, H) such that
-    
-        a ~ c + (x-x0)' * H * (x-x0)
-    
-        where x is in pixel units. c is the value at the fitted optimum, x0 is
-        the position of the optimum, and H is the hessian matrix (curvature in 1D).
+        Fits a paraboloid to a 2D array and returns the optimum value, position, and Hessian.
+
+        Args:
+            a (np.ndarray): Input 2D array.
+
+        Returns:
+            tuple: Optimum value (c), position (x0), and Hessian matrix (H).
         """
     
         sh = a.shape
@@ -233,7 +252,14 @@ class UMPA:
     
     def pshift(self, a, ctr):
         """\
-        Shift an array so that ctr becomes the origin.
+        Shift an array so that ctr becomes the origin using weighted contributions.
+
+        Args:
+            a (np.ndarray): Input array.
+            ctr (array-like): Center coordinates to shift to origin.
+
+        Returns:
+            np.ndarray: Shifted array.
         """
         sh  = np.array(a.shape)
         out = np.zeros_like(a)
@@ -260,9 +286,13 @@ class UMPA:
     def sub_pix_min(self, a, width=1):
         """
         Find the position of the minimum in 2D array a with subpixel precision (using a paraboloid fit).
-        :param a:
-        :param width: 2*width+1 is the size of the window to apply the fit.
-        :return:
+
+        Args:
+            a (np.ndarray): Input 2D array.
+            width (int, optional): Window size for the fit.
+
+        Returns:
+            np.ndarray: Subpixel position of the minimum.
         """
     
         sh = a.shape
@@ -285,4 +315,3 @@ class UMPA:
         r -= (width - cmin)
     
         return r
-    

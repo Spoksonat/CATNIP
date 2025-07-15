@@ -11,6 +11,9 @@ from matplotlib.colors import to_rgba
 class Plots:                             
     
     def __init__(self) -> None:
+        """
+        Initializes the Plots class and sets global plotting parameters, including dark mode and font settings.
+        """
 
         rcParams["font.family"] = "Arial"
 
@@ -36,6 +39,28 @@ class Plots:
             self.background_color_plot = "white"
 
     def show_image(self, img, pixel_size_um, mark_bad, ax, fig, scalebar_color, scalebar_pad, scalebar_alpha, scalebar_fontsize, title, cbar_join=False, vmin = None, vmax = None, EI_aspect = None, colormap=plt.cm.gist_gray.copy()):
+        """
+        Displays an image with a scalebar, colorbar, and custom formatting.
+
+        Args:
+            img (np.ndarray): Image to display.
+            pixel_size_um (float): Pixel size in micrometers.
+            mark_bad (bool): Whether to mark bad pixels.
+            ax (matplotlib.axes.Axes): Axis to plot on.
+            fig (matplotlib.figure.Figure): Figure object.
+            scalebar_color (str): Color of the scalebar.
+            scalebar_pad (float): Padding for the scalebar.
+            scalebar_alpha (float): Alpha transparency for the scalebar box.
+            scalebar_fontsize (int): Font size for the scalebar.
+            title (str): Title for the image.
+            cbar_join (bool, optional): If True, join colorbar with other axes.
+            vmin, vmax (float, optional): Color limits.
+            EI_aspect (float, optional): Aspect ratio for EI images.
+            colormap (matplotlib.colors.Colormap, optional): Colormap to use.
+
+        Returns:
+            matplotlib.image.AxesImage: The displayed image object.
+        """
 
         #colormap = plt.cm.gist_gray.copy()
 
@@ -109,7 +134,18 @@ class Plots:
         return im
 
     
-    def show_plot(self,xdata, ydata, ax, fig, title, label):
+    def show_plot(self, xdata, ydata, ax, fig, title, label):
+        """
+        Plots x-y data with custom formatting, legend, and axis arrows.
+
+        Args:
+            xdata (array-like): X-axis data.
+            ydata (array-like): Y-axis data.
+            ax (matplotlib.axes.Axes): Axis to plot on.
+            fig (matplotlib.figure.Figure): Figure object.
+            title (str): Title for the plot.
+            label (str): Label for the data series.
+        """
 
         im = ax.plot(xdata, ydata, label = label, linestyle='--', marker='o', markersize=5)
         ax.legend(prop={'size': 10})
@@ -173,6 +209,17 @@ class Plots:
         fig.patch.set_facecolor(self.background_color_images)
 
     def layout_plot(self, xdatas, ydatas, dict_params):
+        """
+        Arranges multiple plots in a grid layout.
+
+        Args:
+            xdatas (list): List of x-axis data arrays.
+            ydatas (list): List of y-axis data arrays.
+            dict_params (dict): Dictionary with layout parameters.
+
+        Returns:
+            matplotlib.figure.Figure: The figure object containing the layout.
+        """
 
         n_subplots = dict_params["n_subplots"]
         plot_size = dict_params["plot_size"]
@@ -197,7 +244,18 @@ class Plots:
     
         return fig
     
-    def show_bars(self,xdata, ydata, ax, fig, title, label):
+    def show_bars(self, xdata, ydata, ax, fig, title, label):
+        """
+        Plots bar data with custom formatting and axis arrows.
+
+        Args:
+            xdata (array-like): X-axis data.
+            ydata (array-like): Y-axis data.
+            ax (matplotlib.axes.Axes): Axis to plot on.
+            fig (matplotlib.figure.Figure): Figure object.
+            title (str): Title for the bar plot.
+            label (str): Label for the data series.
+        """
 
         # Calculate widths as differences between consecutive x
         widths = np.diff(xdata)
@@ -272,6 +330,17 @@ class Plots:
         fig.patch.set_facecolor(self.background_color_images)
 
     def layout_bars(self, xdatas, ydatas, dict_params):
+        """
+        Arranges multiple bar plots in a grid layout.
+
+        Args:
+            xdatas (list): List of x-axis data arrays.
+            ydatas (list): List of y-axis data arrays.
+            dict_params (dict): Dictionary with layout parameters.
+
+        Returns:
+            matplotlib.figure.Figure: The figure object containing the layout.
+        """
 
         n_subplots = dict_params["n_subplots"]
         plot_size = dict_params["plot_size"]
@@ -299,7 +368,17 @@ class Plots:
     
         return fig
     
-    def show_hist(self,data, ax, fig, title, label):
+    def show_hist(self, data, ax, fig, title, label):
+        """
+        Plots a histogram of the data with custom formatting and axis arrows.
+
+        Args:
+            data (array-like): Data to plot as a histogram.
+            ax (matplotlib.axes.Axes): Axis to plot on.
+            fig (matplotlib.figure.Figure): Figure object.
+            title (str): Title for the histogram.
+            label (str): Label for the data series.
+        """
 
         im = ax.hist(data, bins=50, label=label, alpha=0.5)  # align bars to the left edge
         ax.legend(prop={'size': 10})
@@ -361,6 +440,16 @@ class Plots:
         fig.patch.set_facecolor(self.background_color_images)
 
     def layout_hist(self, datas, dict_params):
+        """
+        Arranges multiple histograms in a grid layout.
+
+        Args:
+            datas (list): List of data arrays for histograms.
+            dict_params (dict): Dictionary with layout parameters.
+
+        Returns:
+            matplotlib.figure.Figure: The figure object containing the layout.
+        """
 
         n_subplots = dict_params["n_subplots"]
         plot_size = dict_params["plot_size"]
@@ -388,6 +477,15 @@ class Plots:
         return fig
     
     def plot_setup_ei(self, dict_params):
+        """
+        Plots a schematic of the Edge Illumination (EI) X-ray setup.
+
+        Args:
+            dict_params (dict): Dictionary of setup parameters.
+
+        Returns:
+            matplotlib.figure.Figure: The figure object containing the setup schematic.
+        """
        
         self.type_of_source = dict_params["Source geometry"]
         self.binning_factor = int(float(dict_params["Binning factor"]))
@@ -492,6 +590,15 @@ class Plots:
         return fig
     
     def plot_setup_sbi(self, dict_params):
+        """
+        Plots a schematic of the Sandpaper-based Imaging (SBI) X-ray setup.
+
+        Args:
+            dict_params (dict): Dictionary of setup parameters.
+
+        Returns:
+            matplotlib.figure.Figure: The figure object containing the setup schematic.
+        """
        
         self.type_of_source = dict_params["Source geometry"]
         self.binning_factor = int(float(dict_params["Binning factor"]))
@@ -572,6 +679,8 @@ class Plots:
             #ax.annotate('', xy=(x_min,y_max), xytext=(x_min, y_min), arrowprops=arrowprops)  # y-axis
             # Draw x-axis arrow (from left to right)
             ax.annotate('', xy=(1.05, 0), xytext=(0, 0), xycoords='axes fraction', arrowprops=arrowprops)
+            # Draw y-axis arrow (from bottom to top)
+            ax.annotate('', xy=(0, 1.05), xytext=(0, 0), xycoords='axes fraction', arrowprops=arrowprops)
 
         ax.tick_params(colors=self.text_color_plot)
         ax.xaxis.label.set_color(self.text_color_plot)
@@ -593,6 +702,15 @@ class Plots:
         return fig
     
     def plot_setup_sgbi(self, dict_params):
+        """
+        Plots a schematic of the Structured Grating-based Imaging (SGBI) X-ray setup.
+
+        Args:
+            dict_params (dict): Dictionary of setup parameters.
+
+        Returns:
+            matplotlib.figure.Figure: The figure object containing the setup schematic.
+        """
        
         self.type_of_source = dict_params["Source geometry"]
         self.binning_factor = int(float(dict_params["Binning factor"]))
@@ -673,6 +791,8 @@ class Plots:
             #ax.annotate('', xy=(x_min,y_max), xytext=(x_min, y_min), arrowprops=arrowprops)  # y-axis
             # Draw x-axis arrow (from left to right)
             ax.annotate('', xy=(1.05, 0), xytext=(0, 0), xycoords='axes fraction', arrowprops=arrowprops)
+            # Draw y-axis arrow (from bottom to top)
+            ax.annotate('', xy=(0, 1.05), xytext=(0, 0), xycoords='axes fraction', arrowprops=arrowprops)
 
         ax.tick_params(colors=self.text_color_plot)
         ax.xaxis.label.set_color(self.text_color_plot)
@@ -694,6 +814,15 @@ class Plots:
         return fig
     
     def plot_setup_inline(self, dict_params):
+        """
+        Plots a schematic of the Inline X-ray setup.
+
+        Args:
+            dict_params (dict): Dictionary of setup parameters.
+
+        Returns:
+            matplotlib.figure.Figure: The figure object containing the setup schematic.
+        """
        
         self.type_of_source = dict_params["Source geometry"]
         self.binning_factor = int(float(dict_params["Binning factor"]))

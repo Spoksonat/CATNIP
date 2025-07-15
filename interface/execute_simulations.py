@@ -12,6 +12,15 @@ import sys
 #--------------------- EI Simulations ------------------------------
 
 def show_alignment_EI(window):
+    """
+    Runs a single-step EI simulation for alignment and displays a histogram and reference image.
+
+    Args:
+        window: Main application window containing parameters and plot utilities.
+
+    Returns:
+        None
+    """
     window.define_param_dict()
     dict_params_new = window.dict_params.copy()
     dict_params_new["Number of steps"] = "1"
@@ -74,6 +83,15 @@ def show_alignment_EI(window):
     threading.Thread(target=task).start()
 
 def run_EI_sim(window):
+    """
+    Runs a full EI simulation and saves reference/sample images and configuration to disk.
+
+    Args:
+        window: Main application window containing parameters and plot utilities.
+
+    Returns:
+        None
+    """
     window.define_param_dict()
     folder_path = filedialog.askdirectory(title="Select Folder")
     if not folder_path:
@@ -144,6 +162,15 @@ def run_EI_sim(window):
     threading.Thread(target=task).start()
 
 def run_CT_EI_sim(window):
+    """
+    Runs a CT EI simulation over a range of angles and saves results to disk.
+
+    Args:
+        window: Main application window containing parameters and plot utilities.
+
+    Returns:
+        None
+    """
     window.define_param_dict()
     initial_angle = float(window.dict_params["Initial angle (deg)"])
     final_angle = float(window.dict_params["Final angle (deg)"])
@@ -200,6 +227,15 @@ def run_CT_EI_sim(window):
 #--------------------- Inline Simulations ------------------------------
 
 def show_reference_Inline(window):
+    """
+    Runs a single-step Inline simulation and displays reference and sample images.
+
+    Args:
+        window: Main application window containing parameters and plot utilities.
+
+    Returns:
+        None
+    """
     window.define_param_dict()
     dict_params_new = window.dict_params.copy()
     dict_params_new["Type of spectrum"] = "Mono"
@@ -250,6 +286,15 @@ def show_reference_Inline(window):
     threading.Thread(target=task).start()
 
 def run_Inline_sim(window):
+    """
+    Runs a full Inline simulation and saves reference/sample images to disk.
+
+    Args:
+        window: Main application window containing parameters and plot utilities.
+
+    Returns:
+        None
+    """
     window.define_param_dict()
     folder_path = filedialog.askdirectory(title="Select Folder")
     if not folder_path:
@@ -293,6 +338,15 @@ def run_Inline_sim(window):
     threading.Thread(target=task).start()
 
 def run_Inline_sim_ct(window):
+    """
+    Runs a CT Inline simulation over a range of angles and saves results to disk.
+
+    Args:
+        window: Main application window containing parameters and plot utilities.
+
+    Returns:
+        None
+    """
     window.define_param_dict()
     initial_angle = float(window.dict_params["Initial angle (deg)"])
     final_angle = float(window.dict_params["Final angle (deg)"])
@@ -349,6 +403,15 @@ def run_Inline_sim_ct(window):
 #--------------------- SBI Simulations ------------------------------
 
 def show_speckles(window):
+    """
+    Runs a single-step SBI simulation and displays the reference speckle pattern.
+
+    Args:
+        window: Main application window containing parameters and plot utilities.
+
+    Returns:
+        None
+    """
     window.define_param_dict()
     dict_params_new = window.dict_params.copy()
     dict_params_new["Number of steps"] = "1"
@@ -400,6 +463,15 @@ def show_speckles(window):
     threading.Thread(target=task).start()
 
 def run_SBI_sim(window):
+    """
+    Runs a full SBI simulation and saves reference/sample images to disk.
+
+    Args:
+        window: Main application window containing parameters and plot utilities.
+
+    Returns:
+        None
+    """
     window.define_param_dict()
     folder_path = filedialog.askdirectory(title="Select Folder")
     if not folder_path:
@@ -443,6 +515,15 @@ def run_SBI_sim(window):
     threading.Thread(target=task).start()
 
 def run_CT_SBI_sim(window):
+    """
+    Runs a CT SBI simulation over a range of angles and saves results to disk.
+
+    Args:
+        window: Main application window containing parameters and plot utilities.
+
+    Returns:
+        None
+    """
     window.define_param_dict()
     initial_angle = float(window.dict_params["Initial angle (deg)"])
     final_angle = float(window.dict_params["Final angle (deg)"])
@@ -499,6 +580,15 @@ def run_CT_SBI_sim(window):
 #--------------------- SGBI Simulations ------------------------------
 
 def show_reference_sgbi(window):
+    """
+    Runs a single-step SGBI simulation and displays the reference pattern.
+
+    Args:
+        window: Main application window containing parameters and plot utilities.
+
+    Returns:
+        None
+    """
     window.define_param_dict()
     dict_params_new = window.dict_params.copy()
     dict_params_new["Num. of steps per dir."] = "1"
@@ -550,6 +640,15 @@ def show_reference_sgbi(window):
     threading.Thread(target=task).start()
 
 def run_SGBI_sim(window):
+    """
+    Runs a full SGBI simulation and saves reference/sample images to disk.
+
+    Args:
+        window: Main application window containing parameters and plot utilities.
+
+    Returns:
+        None
+    """
     window.define_param_dict()
     folder_path = filedialog.askdirectory(title="Select Folder")
     if not folder_path:
@@ -593,6 +692,15 @@ def run_SGBI_sim(window):
     threading.Thread(target=task).start()
 
 def run_CT_SGBI_sim(window):
+    """
+    Runs a CT SGBI simulation over a range of angles and saves results to disk.
+
+    Args:
+        window: Main application window containing parameters and plot utilities.
+
+    Returns:
+        None
+    """
     window.define_param_dict()
     initial_angle = float(window.dict_params["Initial angle (deg)"])
     final_angle = float(window.dict_params["Final angle (deg)"])
