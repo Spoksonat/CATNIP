@@ -38,6 +38,11 @@ Installation
 
 See :doc:`installation` for instructions on setting up the **CATNIP** virtual environment and dependencies.
 
+Usage
+------------
+
+See :doc:`usage` for instructions on how to execute **CATNIP** graphical interface.
+
 Contents
 --------
 
