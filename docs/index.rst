@@ -46,6 +46,7 @@ Contents
    :caption: Contents:
 
    installation
+   usage
    modules
 
 References
