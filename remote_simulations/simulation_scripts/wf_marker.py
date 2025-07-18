@@ -358,21 +358,20 @@ class Sandpaper:
         Returns:
             np.ndarray: Pattern for the sandpaper.
         """
-        grating = np.zeros(self.img_size, dtype=np.complex128)
+        sandpaper = np.zeros(self.img_size, dtype=np.complex128)
 
         np.random.seed(ind_sandpaper)
         ##posX, posY = self.random_no_overlap(scale_factor)
         posX = np.random.randint(0, self.img_size[1], self.n_specks)
         posY = np.random.randint(0, self.img_size[0], self.n_specks)
         sph = self.create_sph(self.r_pix)
-        grating[posY, posX] = 1
-        grating = convolve(grating, sph, mode='wrap').astype(int)
+        sandpaper[posY, posX] = 1
+        sandpaper = scipy.fft.ifftn(scipy.fft.fftn(sandpaper, workers = -1)*scipy.fft.fftn(sph, sandpaper.shape, workers=-1),workers = -1)
+        sandpaper = np.abs(sandpaper)
 
-        #grating = ndi.gaussian_filter(np.random.normal(size=self.img_size), 2*self.r_pix)
-        #grating = (grating - grating.min())/(grating.max() - grating.min())
-        #grating = grating + 1 # Move mean value to 1 
+        #sandpaper = ndi.gaussian_filter(np.random.normal(size=self.img_size), 2*self.r_pix)
         
-        return grating*self.sim_pixel_m
+        return sandpaper*self.sim_pixel_m
 
     def create_multiple_grats(self):
 
@@ -416,6 +415,7 @@ class Sandpaper:
         for pos in poss:
             pos_x, pos_y = pos[0], pos[1]
             grat_shifted = scipy.ndimage.shift(self.grat, (-pos_y, pos_x), order=3, mode='grid-wrap')
+            #np.roll(self.grat, shift=(-pos_y, pos_x), axis=(0, 1))
             grat_array.append(grat_shifted)
 
         grat_array = np.array(grat_array)
