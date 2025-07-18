@@ -4,7 +4,7 @@ Modules
 .. toctree::
    :maxdepth: 2
 
-   simulation_scripts/grating
+   simulation_scripts/wf_marker
    simulation_scripts/sample
    simulation_scripts/simulation
    simulation_scripts/poly_sim
@@ -20,7 +20,7 @@ Modules
 simulation_scripts.grating
 =========================
 
-.. automodule:: simulation_scripts.grating
+.. automodule:: simulation_scripts.wf_marker
    :members:
    :undoc-members:
    :show-inheritance:
