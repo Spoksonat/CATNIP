@@ -17,7 +17,7 @@ Modules
    interface/common_functions
    interface/execute_simulations
 
-simulation_scripts.grating
+simulation_scripts.wf_marker
 =========================
 
 .. automodule:: simulation_scripts.wf_marker
