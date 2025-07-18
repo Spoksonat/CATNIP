@@ -20,7 +20,7 @@ Features
 - Support for multiple imaging modalities:
   
   - Edge Illumination (EI) [Olivo2021]_
-  - Single Grating-Based Imaging (SGBI) [Hipp2016]_
+  - Grating-Based Imaging (GBI) [Hipp2016]_
   - Speckle-Based Imaging (SBI) [DiTrapani2024]_
   - Propagation-Based Imaging (PBI) [Gradl2017]_
 
