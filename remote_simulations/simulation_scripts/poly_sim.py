@@ -1,14 +1,14 @@
 import numpy as np
 
-from simulation_scripts.grating import GratingEI
+from simulation_scripts.wf_marker import GratingEI
 from simulation_scripts.sample import SampleEI
 from simulation_scripts.simulation import SimulationEI
 
-from simulation_scripts.grating import GratingSGBI
-from simulation_scripts.sample import SampleSGBI
-from simulation_scripts.simulation import SimulationSGBI
+from simulation_scripts.wf_marker import GratingGBI
+from simulation_scripts.sample import SampleGBI
+from simulation_scripts.simulation import SimulationGBI
 
-from simulation_scripts.grating import Sandpaper
+from simulation_scripts.wf_marker import Sandpaper
 from simulation_scripts.sample import SampleSBI
 from simulation_scripts.simulation import SimulationSBI
 
@@ -17,6 +17,13 @@ from simulation_scripts.simulation import SimulationInline
 class Poly_simulationEI:
 
     def __init__(self, dict_params, save_path) -> None:
+        """
+        Initializes the Poly_simulationEI class for polychromatic or monochromatic simulation.
+
+        Args:
+            dict_params (dict): Dictionary of simulation parameters.
+            save_path (str): Path to save simulation results.
+        """
 
         self.dict_params = dict_params
         self.save_path = save_path
@@ -40,6 +47,16 @@ class Poly_simulationEI:
         #self.obtain_poly_Irefs_Isamps()
 
     def single_sim(self, E, theta_y=0) -> tuple:
+        """
+        Runs a single simulation for a given energy and rotation angle.
+
+        Args:
+            E (float): Energy value in keV.
+            theta_y (float, optional): Rotation angle around the Y axis. Default is 0.
+
+        Returns:
+            tuple: Reference and sample intensity stacks.
+        """
 
         self.grat = GratingEI(dict_params=self.dict_params,
                             E = E)
@@ -58,9 +75,16 @@ class Poly_simulationEI:
 
         return I_refs, I_samps
     
-class Poly_simulationSGBI:
+class Poly_simulationGBI:
 
     def __init__(self, dict_params, save_path) -> None:
+        """
+        Initializes the Poly_simulationSGBI class for SGBI simulation.
+
+        Args:
+            dict_params (dict): Dictionary of simulation parameters.
+            save_path (str): Path to save simulation results.
+        """
 
         self.dict_params = dict_params
         self.save_path = save_path
@@ -92,15 +116,25 @@ class Poly_simulationSGBI:
         #self.obtain_poly_Irefs_Isamps()
 
     def single_sim(self, E, theta_y=0) -> tuple:
+        """
+        Runs a single SGBI simulation for a given energy and rotation angle.
 
-        self.grat = GratingSGBI(dict_params=self.dict_params,
+        Args:
+            E (float): Energy value in keV.
+            theta_y (float, optional): Rotation angle around the Y axis. Default is 0.
+
+        Returns:
+            tuple: Reference and sample intensity stacks.
+        """
+
+        self.grat = GratingGBI(dict_params=self.dict_params,
                             E = E)
         
 
-        self.samp = SampleSGBI(dict_params=self.dict_params,
+        self.samp = SampleGBI(dict_params=self.dict_params,
                            E = E)
         
-        self.sim = SimulationSGBI(dict_params=self.dict_params,
+        self.sim = SimulationGBI(dict_params=self.dict_params,
                               grat=self.grat, 
                               samp=self.samp,
                               E = E,
@@ -113,6 +147,13 @@ class Poly_simulationSGBI:
 class Poly_simulationSBI:
 
     def __init__(self, dict_params, save_path) -> None:
+        """
+        Initializes the Poly_simulationSBI class for SBI simulation.
+
+        Args:
+            dict_params (dict): Dictionary of simulation parameters.
+            save_path (str): Path to save simulation results.
+        """
 
         self.dict_params = dict_params
         self.save_path = save_path
@@ -136,6 +177,16 @@ class Poly_simulationSBI:
         #self.obtain_poly_Irefs_Isamps()
 
     def single_sim(self, E, theta_y=0) -> tuple:
+        """
+        Runs a single SBI simulation for a given energy and rotation angle.
+
+        Args:
+            E (float): Energy value in keV.
+            theta_y (float, optional): Rotation angle around the Y axis. Default is 0.
+
+        Returns:
+            tuple: Reference and sample intensity stacks.
+        """
 
         self.grat = Sandpaper(dict_params=self.dict_params,
                             E = E)
@@ -157,6 +208,13 @@ class Poly_simulationSBI:
 class Poly_simulationInline:
 
     def __init__(self, dict_params, save_path) -> None:
+        """
+        Initializes the Poly_simulationInline class for inline simulation.
+
+        Args:
+            dict_params (dict): Dictionary of simulation parameters.
+            save_path (str): Path to save simulation results.
+        """
 
         self.dict_params = dict_params
         self.save_path = save_path
@@ -179,7 +237,16 @@ class Poly_simulationInline:
         #self.obtain_poly_Irefs_Isamps()
 
     def single_sim(self, E, theta_y=0) -> tuple:
+        """
+        Runs a single inline simulation for a given energy and rotation angle.
 
+        Args:
+            E (float): Energy value in keV.
+            theta_y (float, optional): Rotation angle around the Y axis. Default is 0.
+
+        Returns:
+            tuple: Reference and sample intensity images.
+        """
 
         self.samp = SampleSBI(dict_params=self.dict_params,
                               E = E)

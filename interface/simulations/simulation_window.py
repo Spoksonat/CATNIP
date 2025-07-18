@@ -21,7 +21,7 @@ class SimulationsWindow(ctk.CTk):
 
         ctk.CTkButton(button_frame, text="Inline", width=100, command=self.open_inline_window).pack(side="left", padx=20)
         ctk.CTkButton(button_frame, text="SBI", width=100, command=self.open_sbi_window).pack(side="left", padx=20)
-        ctk.CTkButton(button_frame, text="SGBI", width=100, command=self.open_sgbi_window).pack(side="left", padx=20)
+        ctk.CTkButton(button_frame, text="GBI", width=100, command=self.open_GBI_window).pack(side="left", padx=20)
         ctk.CTkButton(button_frame, text="EI", width=100, command=self.open_ei_window).pack(side="left", padx=20)
         
 
@@ -42,9 +42,9 @@ class SimulationsWindow(ctk.CTk):
         self.destroy()
         self.controller.show_sbi_window()
 
-    def open_sgbi_window(self):
+    def open_GBI_window(self):
         self.destroy()
-        self.controller.show_sgbi_window()
+        self.controller.show_GBI_window()
 
     def open_inline_window(self):
         self.destroy()

@@ -701,9 +701,9 @@ class Plots:
 
         return fig
     
-    def plot_setup_sgbi(self, dict_params):
+    def plot_setup_GBI(self, dict_params):
         """
-        Plots a schematic of the Structured Grating-based Imaging (SGBI) X-ray setup.
+        Plots a schematic of the Structured Grating-based Imaging (GBI) X-ray setup.
 
         Args:
             dict_params (dict): Dictionary of setup parameters.

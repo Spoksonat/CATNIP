@@ -1,14 +1,14 @@
 import numpy as np
 
-from simulation_scripts.grating import GratingEI
+from simulation_scripts.wf_marker import GratingEI
 from simulation_scripts.sample import SampleEI
 from simulation_scripts.simulation import SimulationEI
 
-from simulation_scripts.grating import GratingSGBI
-from simulation_scripts.sample import SampleSGBI
-from simulation_scripts.simulation import SimulationSGBI
+from simulation_scripts.wf_marker import GratingGBI
+from simulation_scripts.sample import SampleGBI
+from simulation_scripts.simulation import SimulationGBI
 
-from simulation_scripts.grating import Sandpaper
+from simulation_scripts.wf_marker import Sandpaper
 from simulation_scripts.sample import SampleSBI
 from simulation_scripts.simulation import SimulationSBI
 
@@ -75,7 +75,7 @@ class Poly_simulationEI:
 
         return I_refs, I_samps
     
-class Poly_simulationSGBI:
+class Poly_simulationGBI:
 
     def __init__(self, dict_params, save_path) -> None:
         """
@@ -127,14 +127,14 @@ class Poly_simulationSGBI:
             tuple: Reference and sample intensity stacks.
         """
 
-        self.grat = GratingSGBI(dict_params=self.dict_params,
+        self.grat = GratingGBI(dict_params=self.dict_params,
                             E = E)
         
 
-        self.samp = SampleSGBI(dict_params=self.dict_params,
+        self.samp = SampleGBI(dict_params=self.dict_params,
                            E = E)
         
-        self.sim = SimulationSGBI(dict_params=self.dict_params,
+        self.sim = SimulationGBI(dict_params=self.dict_params,
                               grat=self.grat, 
                               samp=self.samp,
                               E = E,

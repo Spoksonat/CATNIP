@@ -12,11 +12,11 @@ from interface.retrieval.umpa_retrieval_window import UMPARetrievalWindow
 from interface.retrieval.inline_retrieval_window import InlineRetrievalWindow
 from interface.simulations.ei_window import EIWindow
 from interface.simulations.sbi_window import SBIWindow
-from interface.simulations.sgbi_window import SGBIWindow
+from interface.simulations.gbi_window import GBIWindow
 from interface.simulations.inline_window import InlineWindow
 from interface.CT_simulations.ct_inline_window import CTInlineWindow
 from interface.CT_simulations.ct_sbi_window import CTSBIWindow
-from interface.CT_simulations.ct_sgbi_window import CTSGBIWindow
+from interface.CT_simulations.ct_gbi_window import CTGBIWindow
 from interface.CT_simulations.ct_ei_window import CTEIWindow
 from interface.run_external import RunExternalWindow
 
@@ -80,9 +80,9 @@ class AppController:
         self.current_window = SBIWindow(self)
         self.current_window.mainloop()
 
-    def show_sgbi_window(self):
+    def show_GBI_window(self):
         #self._close_current()
-        self.current_window = SGBIWindow(self)
+        self.current_window = GBIWindow(self)
         self.current_window.mainloop()
 
     def show_inline_window(self):
@@ -100,9 +100,9 @@ class AppController:
         self.current_window = CTSBIWindow(self)
         self.current_window.mainloop()
 
-    def show_ct_sgbi_window(self):
+    def show_ct_GBI_window(self):
         #self._close_current()
-        self.current_window = CTSGBIWindow(self)
+        self.current_window = CTGBIWindow(self)
         self.current_window.mainloop()
 
     def show_ct_ei_window(self):
@@ -120,7 +120,7 @@ class AppController:
         self.current_window = RunExternalWindow(self)
         self.current_window.mainloop()
 
-    def show_ct_sgbi_window_server(self):
+    def show_ct_GBI_window_server(self):
         #self._close_current()
         self.current_window = RunExternalWindow(self)
         self.current_window.mainloop()
@@ -145,7 +145,7 @@ class AppController:
         self.current_window = RunExternalWindow(self)
         self.current_window.mainloop()
 
-    def show_sgbi_window_server(self):
+    def show_GBI_window_server(self):
         #self._close_current()
         self.current_window = RunExternalWindow(self)
         self.current_window.mainloop()

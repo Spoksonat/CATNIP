@@ -1,7 +1,7 @@
 from simulation_scripts.poly_sim import Poly_simulationEI
 from simulation_scripts.poly_sim import Poly_simulationInline
 from simulation_scripts.poly_sim import Poly_simulationSBI
-from simulation_scripts.poly_sim import Poly_simulationSGBI
+from simulation_scripts.poly_sim import Poly_simulationGBI
 import numpy as np
 import matplotlib.pyplot as plt
 import threading
@@ -577,11 +577,11 @@ def run_CT_SBI_sim(window):
     # Start task in a thread
     threading.Thread(target=task).start()
 
-#--------------------- SGBI Simulations ------------------------------
+#--------------------- GBI Simulations ------------------------------
 
-def show_reference_sgbi(window):
+def show_reference_GBI(window):
     """
-    Runs a single-step SGBI simulation and displays the reference pattern.
+    Runs a single-step GBI simulation and displays the reference pattern.
 
     Args:
         window: Main application window containing parameters and plot utilities.
@@ -598,7 +598,7 @@ def show_reference_sgbi(window):
     
     def task():
         try:
-            poly_sim = Poly_simulationSGBI(dict_params=dict_params_new, save_path=None)
+            poly_sim = Poly_simulationGBI(dict_params=dict_params_new, save_path=None)
             I_refs_poly = np.zeros((poly_sim.N**2, int(poly_sim.img_size[0]/poly_sim.binning_factor), int(poly_sim.img_size[1]/poly_sim.binning_factor)))
             I_samps_poly = np.zeros((poly_sim.N**2, int(poly_sim.img_size[0]/poly_sim.binning_factor), int(poly_sim.img_size[1]/poly_sim.binning_factor)))
     
@@ -639,9 +639,9 @@ def show_reference_sgbi(window):
     
     threading.Thread(target=task).start()
 
-def run_SGBI_sim(window):
+def run_GBI_sim(window):
     """
-    Runs a full SGBI simulation and saves reference/sample images to disk.
+    Runs a full GBI simulation and saves reference/sample images to disk.
 
     Args:
         window: Main application window containing parameters and plot utilities.
@@ -666,7 +666,7 @@ def run_SGBI_sim(window):
         try:
             print("Running simulation...")
     
-            poly_sim = Poly_simulationSGBI(dict_params=window.dict_params, save_path=folder_path)
+            poly_sim = Poly_simulationGBI(dict_params=window.dict_params, save_path=folder_path)
             I_refs_poly = np.zeros((poly_sim.N**2, int(poly_sim.img_size[0]/poly_sim.binning_factor), int(poly_sim.img_size[1]/poly_sim.binning_factor)))
             I_samps_poly = np.zeros((poly_sim.N**2, int(poly_sim.img_size[0]/poly_sim.binning_factor), int(poly_sim.img_size[1]/poly_sim.binning_factor)))
     
@@ -691,9 +691,9 @@ def run_SGBI_sim(window):
     # Start task in a thread
     threading.Thread(target=task).start()
 
-def run_CT_SGBI_sim(window):
+def run_CT_GBI_sim(window):
     """
-    Runs a CT SGBI simulation over a range of angles and saves results to disk.
+    Runs a CT GBI simulation over a range of angles and saves results to disk.
 
     Args:
         window: Main application window containing parameters and plot utilities.
@@ -722,7 +722,7 @@ def run_CT_SGBI_sim(window):
         try:
             print("Running simulation...")
     
-            poly_sim = Poly_simulationSGBI(dict_params=window.dict_params, save_path=folder_path)
+            poly_sim = Poly_simulationGBI(dict_params=window.dict_params, save_path=folder_path)
             I_refs_poly_ct = np.zeros((N_of_proj, poly_sim.N**2, int(poly_sim.img_size[0]/poly_sim.binning_factor), int(poly_sim.img_size[1]/poly_sim.binning_factor)))
             I_samps_poly_ct = np.zeros((N_of_proj, poly_sim.N**2, int(poly_sim.img_size[0]/poly_sim.binning_factor), int(poly_sim.img_size[1]/poly_sim.binning_factor)))
     

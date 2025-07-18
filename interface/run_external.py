@@ -105,14 +105,14 @@ class RunExternalWindow(ctk.CTk):
             self.controller.show_inline_window()
         elif(self.controller.ext_script == "sbi.py"):
             self.controller.show_sbi_window()
-        elif(self.controller.ext_script == "sgbi.py"):
-            self.controller.show_sgbi_window()
+        elif(self.controller.ext_script == "GBI.py"):
+            self.controller.show_GBI_window()
         elif(self.controller.ext_script == "ct_inline.py"):
             self.controller.show_ct_inline_window()
         elif(self.controller.ext_script == "ct_sbi.py"):
             self.controller.show_ct_sbi_window()
-        elif(self.controller.ext_script == "ct_sgbi.py"):
-            self.controller.show_ct_sgbi_window()
+        elif(self.controller.ext_script == "ct_GBI.py"):
+            self.controller.show_ct_GBI_window()
         elif(self.controller.ext_script == "ct_ei.py"):
             self.controller.show_ct_ei_window()
         else:

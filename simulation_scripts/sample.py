@@ -243,7 +243,7 @@ class SampleEI:
         else:
             raise ValueError("Select a valid sample")
         
-class SampleSGBI:
+class SampleGBI:
 
     def __init__(self, dict_params, E: float) -> None:
 

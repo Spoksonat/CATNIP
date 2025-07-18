@@ -80,8 +80,8 @@ class SimulationSBI:
         u = 2 * np.pi * scipy.fft.fftfreq(self.grat.img_size[1]) / self.grat.sim_pixel_m
         v = 2 * np.pi * scipy.fft.fftfreq(self.grat.img_size[0]) / self.grat.sim_pixel_m
         UU, VV = np.meshgrid(u, v)
-        fres_ker_fou = np.exp(1j*self.k*z)* np.exp(-(1/2)*1j * (z/ self.k) * (UU ** 2 + VV**2))
-        #fres_ker_fou = np.exp(1j * z * np.sqrt(self.k**2 - UU ** 2 - VV**2))
+        #fres_ker_fou = np.exp(1j*self.k*z)* np.exp(-(1/2)*1j * (z/ self.k) * (UU ** 2 + VV**2))
+        fres_ker_fou = np.exp(1j * z * np.sqrt(self.k**2 - UU ** 2 - VV**2))
         return fres_ker_fou
 
     def propagation(self, wf: np.ndarray, z: float) -> np.ndarray:
@@ -148,11 +148,6 @@ class SimulationSBI:
             self.fwhm_sys = int(np.sqrt((self.fwhm/M_samp)**2 + (f_pix**2)*((M_samp-1)/M_samp)**2))
         else:
             self.fwhm_sys = int(self.fwhm)
-        #x, y = np.arange(2*self.fwhm_sys+1), np.arange(2*self.fwhm_sys+1)
-        #XX, YY = np.meshgrid(x,y)
-        #psf = np.exp(-4*np.log(2)*(XX**2 + YY**2)/self.fwhm_sys**2)
-        #image_conv = scipy.fft.ifftn(scipy.fft.fftn(image, workers=-1)*scipy.fft.fftn(psf,image.shape, workers=-1), workers=-1)
-        #convolved_image = np.abs(image_conv)
         convolved_image = gaussian_filter(image, sigma=self.fwhm_sys/2.355)
         return convolved_image
     
@@ -322,7 +317,7 @@ class SimulationSBI:
 
         return out
     
-class SimulationSGBI:
+class SimulationGBI:
 
     def __init__(self, dict_params, grat, samp, E, theta_y=0) -> None:
         """
@@ -399,8 +394,8 @@ class SimulationSGBI:
         u = 2 * np.pi * scipy.fft.fftfreq(self.grat.img_size[1]) / self.grat.sim_pixel_m
         v = 2 * np.pi * scipy.fft.fftfreq(self.grat.img_size[0]) / self.grat.sim_pixel_m
         UU, VV = np.meshgrid(u, v)
-        fres_ker_fou = np.exp(1j*self.k*z)* np.exp(-(1/2)*1j * (z/ self.k) * (UU ** 2 + VV**2))
-        #fres_ker_fou = np.exp(1j * z * np.sqrt(self.k**2 - UU ** 2 - VV**2))
+        #fres_ker_fou = np.exp(1j*self.k*z)* np.exp(-(1/2)*1j * (z/ self.k) * (UU ** 2 + VV**2))
+        fres_ker_fou = np.exp(1j * z * np.sqrt(self.k**2 - UU ** 2 - VV**2))
         return fres_ker_fou
 
     def propagation(self, wf: np.ndarray, z: float) -> np.ndarray:
@@ -467,11 +462,6 @@ class SimulationSGBI:
             self.fwhm_sys = int(np.sqrt((self.fwhm/M_samp)**2 + (f_pix**2)*((M_samp-1)/M_samp)**2))
         else:
             self.fwhm_sys = int(self.fwhm)
-        #x, y = np.arange(2*self.fwhm_sys+1), np.arange(2*self.fwhm_sys+1)
-        #XX, YY = np.meshgrid(x,y)
-        #psf = np.exp(-4*np.log(2)*(XX**2 + YY**2)/self.fwhm_sys**2)
-        #image_conv = scipy.fft.ifftn(scipy.fft.fftn(image, workers=-1)*scipy.fft.fftn(psf,image.shape, workers=-1), workers=-1)
-        #convolved_image = np.abs(image_conv)
         convolved_image = gaussian_filter(image, sigma=self.fwhm_sys/2.355)
         return convolved_image
     
@@ -539,7 +529,7 @@ class SimulationSGBI:
 
 
         wf_bg = self.propagation(wf=self.wf_init, z=self.d_source_grat)
-        wf_grat = self.inter_sandpaper_det(wf=wf_bg, grating_t=bin_grat)
+        wf_grat = self.inter_grat_det(wf=wf_bg, bin_grat=bin_grat)
         
         wf_ref = wf_grat
         wf_ref = self.propagation(wf=wf_ref, z=self.d_grat_det/M_1)#self.d_grat_samp+self.samp.t_m
@@ -732,8 +722,8 @@ class SimulationEI:
         u = 2 * np.pi * scipy.fft.fftfreq(self.grat.img_size[1]) / self.grat.sim_pixel_m
         v = 2 * np.pi * scipy.fft.fftfreq(self.grat.img_size[0]) / self.grat.sim_pixel_m
         UU, VV = np.meshgrid(u, v)
-        fres_ker_fou = np.exp(1j*self.k*z)* np.exp(-(1/2)*1j * (z/ self.k) * (UU ** 2 + VV**2))
-        #fres_ker_fou = np.exp(1j * z * np.sqrt(self.k**2 - UU ** 2 - VV**2))
+        #fres_ker_fou = np.exp(1j*self.k*z)* np.exp(-(1/2)*1j * (z/ self.k) * (UU ** 2 + VV**2))
+        fres_ker_fou = np.exp(1j * z * np.sqrt(self.k**2 - UU ** 2 - VV**2))
         return fres_ker_fou
 
     def propagation(self, wf: np.ndarray, z: float) -> np.ndarray:
@@ -872,7 +862,7 @@ class SimulationEI:
 
 
         wf_bg = self.propagation(wf=self.wf_init, z=self.d_source_grat)
-        wf_grat = self.inter_sandpaper_det(wf=wf_bg, grating_t=bin_grat)
+        wf_grat = self.inter_grat_det(wf=wf_bg, bin_grat=bin_grat)
         
         wf_ref = wf_grat
         wf_ref = self.propagation(wf=wf_ref, z=self.d_grat_det/M_1)#self.d_grat_samp+self.samp.t_m
@@ -1044,8 +1034,8 @@ class SimulationInline:
         u = 2 * np.pi * scipy.fft.fftfreq(self.samp.img_size[1]) / self.samp.sim_pixel_m
         v = 2 * np.pi * scipy.fft.fftfreq(self.samp.img_size[0]) / self.samp.sim_pixel_m
         UU, VV = np.meshgrid(u, v)
-        fres_ker_fou = np.exp(1j*self.k*z)* np.exp(-(1/2)*1j * (z/ self.k) * (UU ** 2 + VV**2))
-        #fres_ker_fou = np.exp(1j * z * np.sqrt(self.k**2 - UU ** 2 - VV**2))
+        #fres_ker_fou = np.exp(1j*self.k*z)* np.exp(-(1/2)*1j * (z/ self.k) * (UU ** 2 + VV**2))
+        fres_ker_fou = np.exp(1j * z * np.sqrt(self.k**2 - UU ** 2 - VV**2))
         return fres_ker_fou
 
     def propagation(self, wf: np.ndarray, z: float) -> np.ndarray:
@@ -1143,7 +1133,6 @@ class SimulationInline:
         wf_ref = self.scale(np.real(wf_ref), M=M_1) +1j*self.scale(np.imag(wf_ref), M=M_1)
         I_ref = np.abs(wf_ref)**2
         I_ref = self.binning(I_ref)
-        #I_ref = self.fresnel_scaling_theorem(intensity_xy=I_ref, z_in_m = d_source_det)
         I_ref = self.convolve_PSF_total(image=I_ref)
         I_ref = np.random.poisson(lam=self.n_ph*I_ref)
         
