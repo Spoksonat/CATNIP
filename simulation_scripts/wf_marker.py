@@ -7,6 +7,7 @@ import scipy.ndimage
 import scipy.constants
 import xraylib as xl
 from scipy.ndimage import shift, convolve
+from scipy.signal import fftconvolve
 
 class GratingEI:
 
@@ -58,7 +59,9 @@ class GratingEI:
         grating = np.zeros(self.img_size)
         fringe = self.create_fringe()
         grating[int(self.img_size[0]/2), int(self.shift_x_um*1e-6/self.sim_pixel_m)::self.px_pix] = 1
-        grating = convolve(grating, fringe, mode='wrap').astype(int)
+        grating = scipy.fft.ifftn(scipy.fft.fftn(grating, workers = -1)*scipy.fft.fftn(fringe, grating.shape, workers=-1),workers = -1)
+        grating = np.abs(grating)
+        grating = (grating > 1e-2).astype(int)  # Thresholding to create binary pattern
         self.bin_grat = grating
 
     def create_bin_grat_2_mask(self):
@@ -74,10 +77,14 @@ class GratingEI:
         effective_fringe_width_pix = int(self.fringe_width_um * 1e-6/self.sim_pixel_m)
 
         grating_1[int(self.img_size[0]/2), int(self.shift_x_um*1e-6/self.sim_pixel_m)::self.px_pix] = 1
-        grating_1 = convolve(grating_1, fringe, mode='wrap').astype(int)
+        grating_1 = scipy.fft.ifftn(scipy.fft.fftn(grating_1, workers = -1)*scipy.fft.fftn(fringe, grating_1.shape, workers=-1),workers = -1)
+        grating_1 = np.abs(grating_1)
+        grating_1 = (grating_1 > 1e-2).astype(int)  # Thresholding to create binary pattern
 
         grating_2[int(self.img_size[0]/2), int(self.shift_x_um*1e-6/self.sim_pixel_m) + (effective_fringe_width_pix - fringe_width_pix)::self.px_pix] = 1
-        grating_2 = convolve(grating_2, fringe, mode='wrap').astype(int)
+        grating_2 = scipy.fft.ifftn(scipy.fft.fftn(grating_2, workers = -1)*scipy.fft.fftn(fringe, grating_2.shape, workers=-1),workers = -1)
+        grating_2 = np.abs(grating_2)
+        grating_2 = (grating_2 > 1e-2).astype(int)  # Thresholding to create binary pattern
 
         self.bin_grat = grating_1  + grating_2 
     
@@ -196,7 +203,10 @@ class GratingGBI:
         
         grating[::self.py_pix, ::self.px_pix] = 1
         grating[int(self.py_pix/2)::self.py_pix, int(self.px_pix/2)::self.px_pix] = 1
-        grating = convolve(grating, hole, mode='wrap').astype(int)
+        #grating = convolve(grating, hole, mode='wrap').astype(int)
+        grating = scipy.fft.ifftn(scipy.fft.fftn(grating, workers = -1)*scipy.fft.fftn(hole, grating.shape, workers=-1),workers = -1)
+        grating = np.abs(grating)
+        grating = (grating > 1e-2).astype(int)  # Thresholding to create binary pattern
         self.bin_grat = 1 - grating
     
     def grat_pos_serpent_shear(self) -> np.ndarray:
@@ -366,9 +376,9 @@ class Sandpaper:
         posY = np.random.randint(0, self.img_size[0], self.n_specks)
         sph = self.create_sph(self.r_pix)
         sandpaper[posY, posX] = 1
+        #sandpaper = convolve(sandpaper, sph, mode='wrap')
         sandpaper = scipy.fft.ifftn(scipy.fft.fftn(sandpaper, workers = -1)*scipy.fft.fftn(sph, sandpaper.shape, workers=-1),workers = -1)
         sandpaper = np.abs(sandpaper)
-
         #sandpaper = ndi.gaussian_filter(np.random.normal(size=self.img_size), 2*self.r_pix)
         
         return sandpaper*self.sim_pixel_m

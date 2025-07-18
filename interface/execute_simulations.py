@@ -124,31 +124,6 @@ def run_EI_sim(window):
 
             print("Simulation finished.")
 
-            sim_param = { 
-                            "Energy in keV": window.dict_params["Energy (keV)"], 
-                            "Num. events per pixel": window.dict_params["Num. events per pixel"],
-                            "Pixel size in m": window.dict_params["Sim. pixel (μm)"], 
-                            "Image size in pix": window.dict_params["FOV (pix)"],
-                            "Grating period in X in um": window.dict_params["Period (μm)"],
-                            "Grating fringe width in um": window.dict_params["Fringe width (μm)"],
-                            "Grating thickness in um": window.dict_params["Grating thickness (μm)"],
-                            "Grating material": window.dict_params["Material"],                     
-                            "Sample geometry": window.dict_params["Geometry"],
-                            "Sample material": window.dict_params["Sample material"],
-                            "Sample thickness in mm": window.dict_params["Whole sample thickness (mm)"],
-                            "Background material": window.dict_params["Background material"],
-                            "Binning factor": window.dict_params["Binning factor"],
-                            "Source-to-detector distance in m": window.dict_params["Source-Detector distance (m)"],
-                            "Grating-to-Sample distance in m": window.dict_params["Grating-Sample distance (m)"],
-                            "Shift grating in prop. axis (cm)": window.dict_params["Shift grating in prop. axis (cm)"],
-                            "Shift grating lateral axis (μm)": window.dict_params["Shift grating lateral axis (μm)"],
-                            "Number of steps": window.dict_params["Number of steps"],
-                        }              
-            with open(poly_sim.save_path + "/sim_config.csv",'w', 
-                      newline="") as file:
-                w = csv.writer(file)
-                w.writerows(sim_param.items())
-
             np.save(poly_sim.save_path + "/Param_Card.npy", window.dict_params)
         finally:
             # Restore output and stop bar safely in main thread
