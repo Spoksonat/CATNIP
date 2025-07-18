@@ -6,7 +6,7 @@ import scipy.fft
 import scipy.ndimage
 import scipy.constants
 import xraylib as xl
-from scipy.ndimage import shift
+from scipy.ndimage import shift, convolve
 
 class GratingEI:
 
@@ -58,9 +58,8 @@ class GratingEI:
         grating = np.zeros(self.img_size)
         fringe = self.create_fringe()
         grating[int(self.img_size[0]/2), int(self.shift_x_um*1e-6/self.sim_pixel_m)::self.px_pix] = 1
-        grating = scipy.fft.ifftn(scipy.fft.fftn(grating, workers = -1)*scipy.fft.fftn(fringe, grating.shape,workers=-1), workers = -1)
-        grating = np.abs(grating)
-        self.bin_grat = (grating > 0.01).astype(int)
+        grating = convolve(grating, fringe, mode='wrap').astype(int)
+        self.bin_grat = grating
 
     def create_bin_grat_2_mask(self):
         """
@@ -75,14 +74,12 @@ class GratingEI:
         effective_fringe_width_pix = int(self.fringe_width_um * 1e-6/self.sim_pixel_m)
 
         grating_1[int(self.img_size[0]/2), int(self.shift_x_um*1e-6/self.sim_pixel_m)::self.px_pix] = 1
-        grating_1 = scipy.fft.ifftn(scipy.fft.fftn(grating_1, workers = -1)*scipy.fft.fftn(fringe, grating_1.shape,workers=-1), workers = -1)
-        grating_1 = np.abs(grating_1)
+        grating_1 = convolve(grating_1, fringe, mode='wrap').astype(int)
 
         grating_2[int(self.img_size[0]/2), int(self.shift_x_um*1e-6/self.sim_pixel_m) + (effective_fringe_width_pix - fringe_width_pix)::self.px_pix] = 1
-        grating_2 = scipy.fft.ifftn(scipy.fft.fftn(grating_2, workers = -1)*scipy.fft.fftn(fringe, grating_2.shape,workers=-1), workers = -1)
-        grating_2 = np.abs(grating_2)
+        grating_2 = convolve(grating_2, fringe, mode='wrap').astype(int)
 
-        self.bin_grat = ((grating_1 > 0.01).astype(int)) + ((grating_2 > 0.01).astype(int))
+        self.bin_grat = grating_1  + grating_2 
     
     def grat_pos_lin(self) -> np.ndarray:
         """
@@ -199,34 +196,8 @@ class GratingGBI:
         
         grating[::self.py_pix, ::self.px_pix] = 1
         grating[int(self.py_pix/2)::self.py_pix, int(self.px_pix/2)::self.px_pix] = 1
-        grating = scipy.fft.ifftn(scipy.fft.fftn(grating, workers = -1)*scipy.fft.fftn(hole, grating.shape, workers=-1),workers = -1)
-        grating = np.abs(grating)
-        self.bin_grat = (grating < 0.01).astype(int)
-        
-    def grat_pos_serpent(self) -> np.ndarray:
-        """
-        Calculates serpent-like positions for grating steps.
-
-        Returns:
-            np.ndarray: Array of positions for each step in serpent-like order.
-        """
-        step_X, step_Y = int(self.px_pix/self.N), int(self.py_pix/self.N)
-        x = step_X * np.arange(self.N)
-        y = step_Y * np.arange(self.N)
-    
-        XX, YY = np.meshgrid(x,y)
-        XX[1::2] = XX[1::2, ::-1]
-        rows, cols = XX.shape[0], XX.shape[1]
-        positions = []
-    
-        for i in range(rows):
-            for j in range(cols):
-                point = [XX[i, j], YY[i, j]]
-                positions.append(point)
-    
-        positions = np.array(positions)
-    
-        return positions
+        grating = convolve(grating, hole, mode='wrap').astype(int)
+        self.bin_grat = 1 - grating
     
     def grat_pos_serpent_shear(self) -> np.ndarray:
         """
@@ -395,8 +366,7 @@ class Sandpaper:
         posY = np.random.randint(0, self.img_size[0], self.n_specks)
         sph = self.create_sph(self.r_pix)
         grating[posY, posX] = 1
-        grating = scipy.fft.ifftn(scipy.fft.fftn(grating, workers = -1)*scipy.fft.fftn(sph, grating.shape, workers=-1),workers = -1)
-        grating = np.abs(grating)
+        grating = convolve(grating, sph, mode='wrap').astype(int)
 
         #grating = ndi.gaussian_filter(np.random.normal(size=self.img_size), 2*self.r_pix)
         #grating = (grating - grating.min())/(grating.max() - grating.min())
@@ -446,7 +416,6 @@ class Sandpaper:
         for pos in poss:
             pos_x, pos_y = pos[0], pos[1]
             grat_shifted = scipy.ndimage.shift(self.grat, (-pos_y, pos_x), order=3, mode='grid-wrap')
-            #np.roll(self.grat, shift=(-pos_y, pos_x), axis=(0, 1))
             grat_array.append(grat_shifted)
 
         grat_array = np.array(grat_array)
