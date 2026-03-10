@@ -248,7 +248,7 @@ class Poly_simulationInline:
             tuple: Reference and sample intensity images.
         """
 
-        self.samp = SampleSBI(dict_params=self.dict_params,
+        self.samp = SampleEI(dict_params=self.dict_params,
                               E = E)
         
         self.sim = SimulationInline(dict_params=self.dict_params, 

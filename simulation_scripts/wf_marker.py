@@ -8,6 +8,7 @@ import scipy.constants
 import xraylib as xl
 from scipy.ndimage import shift, convolve
 from scipy.signal import fftconvolve
+import random
 
 class GratingEI:
 
@@ -414,13 +415,33 @@ class Sandpaper:
     
         return positions
     
+    def grat_pos_random(self) -> np.ndarray:
+        """
+        Calculates positions for sandpaper steps in a random-walk.
+
+        Returns:
+            np.ndarray: Array of positions for each step.
+        """
+        step = (self.step_size_um*1e-6/self.sim_pixel_m)
+        positions = [np.array([0,0])]
+
+        for i in range(1,self.N):
+            angle = random.uniform(-np.pi, np.pi)
+            point = positions[-1] + np.array([step*np.cos(angle), step*np.sin(angle)])
+
+            positions.append(point)
+
+        positions = np.array(positions)
+    
+        return positions
+    
     def obtain_grat_array(self) -> np.ndarray:
 
         self.create_multiple_grats()
 
         grat_array = []
 
-        poss = self.grat_pos_lab()
+        poss = self.grat_pos_random()
         
         for pos in poss:
             pos_x, pos_y = pos[0], pos[1]

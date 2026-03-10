@@ -24,6 +24,7 @@ class SimulationSBI:
 
         self.grat = grat
         self.samp = samp
+        self.dict_params = dict_params
         self.type_of_source = dict_params["Source geometry"]
         self.binning_factor = int(float(dict_params["Binning factor"]))
         self.d_source_det = float(dict_params["Source-Detector distance (m)"])
@@ -151,7 +152,7 @@ class SimulationSBI:
         convolved_image = gaussian_filter(image, sigma=self.fwhm_sys/2.355)
         return convolved_image
     
-    def add_dark_field(self, image, t_map_1, patch_size=32):
+    def add_dark_field(self, image, t_map_1):
         """
         Adds dark-field blur to the image based on sample thickness.
 
@@ -163,18 +164,35 @@ class SimulationSBI:
         Returns:
             np.ndarray: Image with dark-field effect.
         """
-        # sigma = z_prop*theta/pixel_size, theta = scattering angle
-        theta_map = 10e-6*t_map_1
+        ## sigma = z_prop*theta/pixel_size, theta = scattering angle
         blurred = np.zeros_like(image)
         h, w = image.shape
-        for i in range(0, h, patch_size):
-            for j in range(0, w, patch_size):
-                patch = image[i:i+patch_size, j:j+patch_size]
-                theta_patch = theta_map[i:i+patch_size, j:j+patch_size]
-                theta_mean = np.mean(theta_patch)
-                sigma = (self.d_prop * theta_mean) / (self.grat.sim_pixel_m)
-                blurred_patch = gaussian_filter(patch, sigma=sigma)
-                blurred[i:i+patch_size, j:j+patch_size] = blurred_patch
+        t_map_1 = self.binning(t_map_1)
+        theta_max_x = float(self.dict_params["RMS scattering angle in X (μrad)"])*1e-6
+        theta_max_y = float(self.dict_params["RMS scattering angle in Y (μrad)"])*1e-6
+        theta_map_x = theta_max_x*(t_map_1 - t_map_1.min())/(t_map_1.max() - t_map_1.min())
+        theta_map_y = theta_max_y*(t_map_1 - t_map_1.min())/(t_map_1.max() - t_map_1.min())
+        N_sw = 11
+        patch_size = 2*N_sw + 1 
+        for i in range(N_sw, h-N_sw):
+            for j in range(N_sw, w-N_sw):
+                patch = image[i-N_sw:i+N_sw+1, j-N_sw:j+N_sw+1]
+                sigma_x = (self.d_prop * theta_map_x[i,j]) / (self.grat.sim_pixel_m)
+                sigma_y = (self.d_prop * theta_map_y[i,j]) / (self.grat.sim_pixel_m)
+                #blurred_patch = gaussian_filter(patch, sigma=sigma)
+                x, y = np.arange(patch_size), np.arange(patch_size)
+                XX, YY = np.meshgrid(x,y)
+                if((sigma_x == 0) or (sigma_y==0)):
+                    kernel = np.zeros(patch.shape)
+                    kernel[N_sw, N_sw] = 1
+                else: 
+                    kernel = np.exp(-((XX - N_sw)**2)/(2*sigma_x**2))*np.exp(-((YY-N_sw)**2)/(2*sigma_y**2))
+                    kernel = kernel/np.sum(kernel)
+                blurred[i,j] = np.sum(patch * kernel)
+        blurred[:N_sw,:] = image[:N_sw,:]
+        blurred[-N_sw:,:] = image[-N_sw:,:]
+        blurred[:,:N_sw] = image[:,:N_sw]
+        blurred[:,-N_sw:] = image[:,-N_sw:]
         return blurred
     
     def create_ref_samp(self, bin_grat: np.ndarray, t_map_1: np.ndarray, t_map_2: np.ndarray, t_map_3: np.ndarray) -> np.ndarray:
@@ -219,7 +237,7 @@ class SimulationSBI:
         I_samp = np.abs(wf_samp)**2
         I_samp = self.binning(I_samp)
         I_samp = self.convolve_PSF_total(image=I_samp)
-        I_samp = self.add_dark_field(image=I_samp, t_map_1=t_map_1)
+        #I_samp = self.add_dark_field(image=I_samp, t_map_1=t_map_1)
         I_samp = np.random.poisson(lam=self.n_ph*I_samp)
         
         return I_ref, I_samp
@@ -465,7 +483,7 @@ class SimulationGBI:
         convolved_image = gaussian_filter(image, sigma=self.fwhm_sys/2.355)
         return convolved_image
     
-    def add_dark_field(self, image, t_map_1, patch_size=32):
+    def add_dark_field(self, image, t_map_1):
         """
         Adds dark-field blur to the image based on sample thickness.
 
@@ -485,7 +503,7 @@ class SimulationGBI:
         theta_max_y = float(self.dict_params["RMS scattering angle in Y (μrad)"])*1e-6
         theta_map_x = theta_max_x*(t_map_1 - t_map_1.min())/(t_map_1.max() - t_map_1.min())
         theta_map_y = theta_max_y*(t_map_1 - t_map_1.min())/(t_map_1.max() - t_map_1.min())
-        N_sw = 15
+        N_sw = 11
         patch_size = 2*N_sw + 1 
         for i in range(N_sw, h-N_sw):
             for j in range(N_sw, w-N_sw):
@@ -549,7 +567,7 @@ class SimulationGBI:
         I_samp = np.abs(wf_samp)**2
         I_samp = self.binning(I_samp)
         I_samp = self.convolve_PSF_total(image=I_samp)
-        I_samp = self.add_dark_field(image=I_samp, t_map_1=t_map_1)
+        #I_samp = self.add_dark_field(image=I_samp, t_map_1=t_map_1)
         I_samp = np.random.poisson(lam=self.n_ph*I_samp)
         
         return I_ref, I_samp
@@ -818,7 +836,7 @@ class SimulationEI:
         theta_max_y = float(self.dict_params["RMS scattering angle in Y (μrad)"])*1e-6
         theta_map_x = theta_max_x*(t_map_1 - t_map_1.min())/(t_map_1.max() - t_map_1.min())
         theta_map_y = theta_max_y*(t_map_1 - t_map_1.min())/(t_map_1.max() - t_map_1.min())
-        N_sw = 15
+        N_sw = 11
         patch_size = 2*N_sw + 1 
         for i in range(N_sw, h-N_sw):
             for j in range(N_sw, w-N_sw):
@@ -882,7 +900,7 @@ class SimulationEI:
         I_samp = np.abs(wf_samp)**2
         I_samp = self.binning(I_samp)
         I_samp = self.convolve_PSF_total(image=I_samp)
-        I_samp = self.add_dark_field(image=I_samp, t_map_1=t_map_1)
+        #I_samp = self.add_dark_field(image=I_samp, t_map_1=t_map_1)
         I_samp = np.random.poisson(lam=self.n_ph*I_samp)
         
         return I_ref, I_samp
@@ -1098,7 +1116,7 @@ class SimulationInline:
         """
         if(self.type_of_source == "Cone"):
             M_samp = (self.d_source_samp + self.d_samp_det)/self.d_source_samp
-            f_pix = (self.f_um*1e-6/self.grat.sim_pixel_m)
+            f_pix = (self.f_um*1e-6/self.samp.sim_pixel_m)
             self.fwhm_sys = int(np.sqrt((self.fwhm/M_samp)**2 + (f_pix**2)*((M_samp-1)/M_samp)**2))
         else:
             self.fwhm_sys = int(self.fwhm)

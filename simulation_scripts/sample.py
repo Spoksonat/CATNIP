@@ -113,7 +113,9 @@ class SampleEI:
         t_block_in_pix = int(float(self.dict_params["Block thickness (mm)"])*1e-3/self.sim_pixel_m)
     
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
+
         t_map_block = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1]/2, Ly=self.img_size[0]/2, Lz=t_block_in_pix)
+
     
         t_map_1 = t_map_block*self.sim_pixel_m
         t_map_2 = (t_map_bkg - t_map_block)*self.sim_pixel_m
@@ -140,6 +142,7 @@ class SampleEI:
     
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
         t_map_cylinder = create_cylinder_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, D=D_tube_in_pix, h=self.img_size[0])
+
         t_map_cylinder_int = create_cylinder_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, D=D_int_in_pix, h=self.img_size[0])
     
         t_map_1 = t_map_cylinder_int*self.sim_pixel_m
@@ -163,7 +166,8 @@ class SampleEI:
         d_tube_in_pix = int(d_tube_in_mm*1e-3/self.sim_pixel_m)
         t_bkg_in_pix = int(self.t_m/self.sim_pixel_m)
 
-        t_map_tube = create_cylinder_proj(theta_y = theta_y, theta_z=45, img_size=self.img_size, D=d_tube_in_pix, h=self.img_size[0])
+        t_map_tube = create_cylinder_proj(theta_y = theta_y, theta_z=45, img_size=self.img_size, D=d_tube_in_pix, h=0.9*np.sqrt(self.img_size[0]**2 + self.img_size[1]**2))
+
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
         
         t_map_1 = t_map_tube*self.sim_pixel_m
@@ -185,7 +189,7 @@ class SampleEI:
         t_block_in_mm = float(self.dict_params["Wedge thickness (mm)"])
         t_block_in_pix = int(t_block_in_mm*1e-3/self.sim_pixel_m)
         t_bkg_in_pix = int(self.t_m/self.sim_pixel_m)
-        
+
         t_map_wedge = create_wedge_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx = self.img_size[1]/2, Ly = self.img_size[0]/2, Lz=t_block_in_pix)
 
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
@@ -211,6 +215,7 @@ class SampleEI:
         t_bkg_in_pix = int(self.t_m/self.sim_pixel_m)
         
         t_map_sph = create_ellipse_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, a = R_in_pix, b=R_in_pix, c=R_in_pix)
+
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
 
         t_map_1 = t_map_sph*self.sim_pixel_m
@@ -311,7 +316,7 @@ class SampleGBI:
         Returns:
             tuple: Three thickness maps (t_map_1, t_map_2, t_map_3) corresponding to microcalcifications, PMMA, and wax regions.
         """
-        
+
         t_map_uCs = np.zeros(self.img_size)
 
         d_calc_in_um = float(self.dict_params["Diameter uC (μm)"])
@@ -332,7 +337,13 @@ class SampleGBI:
         
             # Ensure the coordinates are within the image bounds
             if 0 <= y < self.img_size[0] and 0 <= x < self.img_size[1]:
-                t_map_uCs += create_ellipse_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, a=R_pix, b=R_pix, c=R_pix, cx=x, cy=y)
+                f = self.dict_params["RMS scattering angle in X (μrad)"]
+                R_microst_um = float(self.dict_params["RMS scattering angle in Y (μrad)"])
+                R_microst_pix = R_microst_um*1e-6/(self.sim_pixel_m)
+                if( (f == "" or float(f) == 0.0) or float(f)==1.0):
+                    t_map_uCs += create_ellipse_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, a=R_pix, b=R_pix, c=R_pix, cx=x, cy=y)
+                else:
+                    t_map_uCs += create_ellipse_proj_DF(theta_y = theta_y, theta_z=0, img_size=self.img_size, binning_factor=self.binning_factor, a=R_pix, b=R_pix, c=R_pix, f=float(f), R_microst=R_microst_pix, cx=x, cy=y)
     
         t_map_PMMA = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_PMMA_pix)
         t_map_wax = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_wax_pix)
@@ -358,7 +369,13 @@ class SampleGBI:
         t_block_in_pix = int(float(self.dict_params["Block thickness (mm)"])*1e-3/self.sim_pixel_m)
     
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
-        t_map_block = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1]/2, Ly=self.img_size[0]/2, Lz=t_block_in_pix)
+        f = self.dict_params["RMS scattering angle in X (μrad)"]
+        R_microst_um = float(self.dict_params["RMS scattering angle in Y (μrad)"])
+        R_microst_pix = R_microst_um*1e-6/(self.sim_pixel_m)
+        if( (f == "" or float(f) == 0.0) or float(f)==1.0):
+            t_map_block = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1]/2, Ly=self.img_size[0]/2, Lz=t_block_in_pix)
+        else:
+            t_map_block = create_box_proj_DF(theta_y = theta_y, theta_z=0, img_size=self.img_size, binning_factor=self.binning_factor, Lx=self.img_size[1]/2, Ly=self.img_size[0]/2, Lz=t_block_in_pix, f=float(f), R_microst=R_microst_pix)
     
         t_map_1 = t_map_block*self.sim_pixel_m
         t_map_2 = (t_map_bkg - t_map_block)*self.sim_pixel_m
@@ -385,7 +402,13 @@ class SampleGBI:
     
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
         t_map_cylinder = create_cylinder_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, D=D_tube_in_pix, h=self.img_size[0])
-        t_map_cylinder_int = create_cylinder_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, D=D_int_in_pix, h=self.img_size[0])
+        f = self.dict_params["RMS scattering angle in X (μrad)"]
+        R_microst_um = float(self.dict_params["RMS scattering angle in Y (μrad)"])
+        R_microst_pix = R_microst_um*1e-6/(self.sim_pixel_m)
+        if( (f == "" or float(f) == 0.0) or float(f)==1.0):
+            t_map_cylinder_int = create_cylinder_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, D=D_int_in_pix, h=self.img_size[0])
+        else:
+            t_map_cylinder_int = create_cylinder_proj_DF(theta_y = theta_y, theta_z=0, img_size=self.img_size, binning_factor=self.binning_factor, D=D_int_in_pix, h=self.img_size[0], f=float(f), R_microst=R_microst_pix)
     
         t_map_1 = t_map_cylinder_int*self.sim_pixel_m
         t_map_3 = (t_map_cylinder - t_map_cylinder_int)*self.sim_pixel_m
@@ -408,7 +431,14 @@ class SampleGBI:
         d_tube_in_pix = int(d_tube_in_mm*1e-3/self.sim_pixel_m)
         t_bkg_in_pix = int(self.t_m/self.sim_pixel_m)
 
-        t_map_tube = create_cylinder_proj(theta_y = theta_y, theta_z=45, img_size=self.img_size, D=d_tube_in_pix, h=self.img_size[0])
+        f = self.dict_params["RMS scattering angle in X (μrad)"]
+        R_microst_um = float(self.dict_params["RMS scattering angle in Y (μrad)"])
+        R_microst_pix = R_microst_um*1e-6/(self.sim_pixel_m)
+        if( (f == "" or float(f) == 0.0) or float(f)==1.0):
+            t_map_tube = create_cylinder_proj(theta_y = theta_y, theta_z=45, img_size=self.img_size, D=d_tube_in_pix, h=0.9*np.sqrt(self.img_size[0]**2 + self.img_size[1]**2))
+        else:
+            t_map_tube = create_cylinder_proj_DF(theta_y = theta_y, theta_z=45, img_size=self.img_size, binning_factor=self.binning_factor, D=d_tube_in_pix, h=0.9*np.sqrt(self.img_size[0]**2 + self.img_size[1]**2), f=float(f), R_microst=R_microst_pix).T
+
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
         
         t_map_1 = t_map_tube*self.sim_pixel_m
@@ -430,8 +460,14 @@ class SampleGBI:
         t_block_in_mm = float(self.dict_params["Wedge thickness (mm)"])
         t_block_in_pix = int(t_block_in_mm*1e-3/self.sim_pixel_m)
         t_bkg_in_pix = int(self.t_m/self.sim_pixel_m)
-        
-        t_map_wedge = create_wedge_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx = self.img_size[1]/2, Ly = self.img_size[0]/2, Lz=t_block_in_pix)
+
+        f = self.dict_params["RMS scattering angle in X (μrad)"]
+        R_microst_um = float(self.dict_params["RMS scattering angle in Y (μrad)"])
+        R_microst_pix = R_microst_um*1e-6/(self.sim_pixel_m)
+        if( (f == "" or float(f) == 0.0) or float(f)==1.0):
+            t_map_wedge = create_wedge_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx = self.img_size[1]/2, Ly = self.img_size[0]/2, Lz=t_block_in_pix)
+        else:
+            t_map_wedge = create_wedge_proj_DF(theta_y = theta_y, theta_z=0, img_size=self.img_size, binning_factor=self.binning_factor, Lx = (self.img_size[1]/2), Ly = (self.img_size[0]/2), Lz=(t_block_in_pix), f=float(f), R_microst=R_microst_pix)
 
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
 
@@ -455,7 +491,14 @@ class SampleGBI:
         R_in_pix = int(d_sph_samp_in_mm*1e-3/(2*self.sim_pixel_m))               # Radius in pixels
         t_bkg_in_pix = int(self.t_m/self.sim_pixel_m)
         
-        t_map_sph = create_ellipse_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, a = R_in_pix, b=R_in_pix, c=R_in_pix)
+        f = self.dict_params["RMS scattering angle in X (μrad)"]
+        R_microst_um = float(self.dict_params["RMS scattering angle in Y (μrad)"])
+        R_microst_pix = R_microst_um*1e-6/(self.sim_pixel_m)
+        if( (f == "" or float(f) == 0.0) or float(f)==1.0):
+            t_map_sph = create_ellipse_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, a = R_in_pix, b=R_in_pix, c=R_in_pix)
+        else:
+            t_map_sph = create_ellipse_proj_DF(theta_y = theta_y, theta_z=0, img_size=self.img_size, binning_factor=self.binning_factor, a = R_in_pix, b=R_in_pix, c=R_in_pix, f=float(f), R_microst=R_microst_pix)
+
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
 
         t_map_1 = t_map_sph*self.sim_pixel_m
@@ -548,7 +591,7 @@ class SampleSBI:
         Returns:
             tuple: Three thickness maps (t_map_1, t_map_2, t_map_3) corresponding to microcalcifications, PMMA, and wax regions.
         """
-        
+
         t_map_uCs = np.zeros(self.img_size)
 
         d_calc_in_um = float(self.dict_params["Diameter uC (μm)"])
@@ -569,7 +612,13 @@ class SampleSBI:
         
             # Ensure the coordinates are within the image bounds
             if 0 <= y < self.img_size[0] and 0 <= x < self.img_size[1]:
-                t_map_uCs += create_ellipse_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, a=R_pix, b=R_pix, c=R_pix, cx=x, cy=y)
+                f = self.dict_params["RMS scattering angle in X (μrad)"]
+                R_microst_um = float(self.dict_params["RMS scattering angle in Y (μrad)"])
+                R_microst_pix = R_microst_um*1e-6/(self.sim_pixel_m)
+                if( (f == "" or float(f) == 0.0) or float(f)==1.0):
+                    t_map_uCs += create_ellipse_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, a=R_pix, b=R_pix, c=R_pix, cx=x, cy=y)
+                else:
+                    t_map_uCs += create_ellipse_proj_DF(theta_y = theta_y, theta_z=0, img_size=self.img_size, binning_factor=self.binning_factor, a=R_pix, b=R_pix, c=R_pix, f=float(f), R_microst=R_microst_pix, cx=x, cy=y)
     
         t_map_PMMA = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_PMMA_pix)
         t_map_wax = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_wax_pix)
@@ -595,7 +644,13 @@ class SampleSBI:
         t_block_in_pix = int(float(self.dict_params["Block thickness (mm)"])*1e-3/self.sim_pixel_m)
     
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
-        t_map_block = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1]/2, Ly=self.img_size[0]/2, Lz=t_block_in_pix)
+        f = self.dict_params["RMS scattering angle in X (μrad)"]
+        R_microst_um = float(self.dict_params["RMS scattering angle in Y (μrad)"])
+        R_microst_pix = R_microst_um*1e-6/(self.sim_pixel_m)
+        if( (f == "" or float(f) == 0.0) or float(f)==1.0):
+            t_map_block = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1]/2, Ly=self.img_size[0]/2, Lz=t_block_in_pix)
+        else:
+            t_map_block = create_box_proj_DF(theta_y = theta_y, theta_z=0, img_size=self.img_size, binning_factor=self.binning_factor, Lx=(self.img_size[1]/2), Ly=(self.img_size[0]/2), Lz=(t_block_in_pix), f=float(f), R_microst=R_microst_pix)
     
         t_map_1 = t_map_block*self.sim_pixel_m
         t_map_2 = (t_map_bkg - t_map_block)*self.sim_pixel_m
@@ -622,7 +677,13 @@ class SampleSBI:
     
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
         t_map_cylinder = create_cylinder_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, D=D_tube_in_pix, h=self.img_size[0])
-        t_map_cylinder_int = create_cylinder_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, D=D_int_in_pix, h=self.img_size[0])
+        f = self.dict_params["RMS scattering angle in X (μrad)"]
+        R_microst_um = float(self.dict_params["RMS scattering angle in Y (μrad)"])
+        R_microst_pix = R_microst_um*1e-6/(self.sim_pixel_m)
+        if( (f == "" or float(f) == 0.0) or float(f)==1.0):
+            t_map_cylinder_int = create_cylinder_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, D=D_int_in_pix, h=self.img_size[0])
+        else:
+            t_map_cylinder_int = create_cylinder_proj_DF(theta_y = theta_y, theta_z=0, img_size=self.img_size, binning_factor=self.binning_factor, D=D_int_in_pix, h=self.img_size[0], f=float(f), R_microst=R_microst_pix)
     
         t_map_1 = t_map_cylinder_int*self.sim_pixel_m
         t_map_3 = (t_map_cylinder - t_map_cylinder_int)*self.sim_pixel_m
@@ -645,7 +706,16 @@ class SampleSBI:
         d_tube_in_pix = int(d_tube_in_mm*1e-3/self.sim_pixel_m)
         t_bkg_in_pix = int(self.t_m/self.sim_pixel_m)
 
-        t_map_tube = create_cylinder_proj(theta_y = theta_y, theta_z=45, img_size=self.img_size, D=d_tube_in_pix, h=self.img_size[0])
+        f = self.dict_params["RMS scattering angle in X (μrad)"]
+        R_microst_um = float(self.dict_params["RMS scattering angle in Y (μrad)"])
+        R_microst_pix = R_microst_um*1e-6/(self.sim_pixel_m)
+        if( (f == "" or float(f) == 0.0) or float(f)==1.0):
+            t_map_tube = create_cylinder_proj(theta_y = theta_y, theta_z=45, img_size=self.img_size, D=d_tube_in_pix, h=0.9*np.sqrt(self.img_size[0]**2 + self.img_size[1]**2))
+            print("Normal")
+        else:
+            t_map_tube = create_cylinder_proj_DF(theta_y = theta_y, theta_z=45, img_size=self.img_size, binning_factor=self.binning_factor, D=d_tube_in_pix, h=0.9*np.sqrt(self.img_size[0]**2 + self.img_size[1]**2), f=float(f), R_microst=R_microst_pix)
+            
+
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
         
         t_map_1 = t_map_tube*self.sim_pixel_m
@@ -667,8 +737,14 @@ class SampleSBI:
         t_block_in_mm = float(self.dict_params["Wedge thickness (mm)"])
         t_block_in_pix = int(t_block_in_mm*1e-3/self.sim_pixel_m)
         t_bkg_in_pix = int(self.t_m/self.sim_pixel_m)
-        
-        t_map_wedge = create_wedge_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx = self.img_size[1]/2, Ly = self.img_size[0]/2, Lz=t_block_in_pix)
+
+        f = self.dict_params["RMS scattering angle in X (μrad)"]
+        R_microst_um = float(self.dict_params["RMS scattering angle in Y (μrad)"])
+        R_microst_pix = R_microst_um*1e-6/(self.sim_pixel_m)
+        if( (f == "" or float(f) == 0.0) or float(f)==1.0):
+            t_map_wedge = create_wedge_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx = self.img_size[1]/2, Ly = self.img_size[0]/2, Lz=t_block_in_pix)
+        else:
+            t_map_wedge = create_wedge_proj_DF(theta_y = theta_y, theta_z=0, img_size=self.img_size, binning_factor=self.binning_factor, Lx = (self.img_size[1]/2), Ly = (self.img_size[0]/2), Lz=(t_block_in_pix), f=float(f), R_microst=R_microst_pix)
 
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
 
@@ -692,7 +768,14 @@ class SampleSBI:
         R_in_pix = int(d_sph_samp_in_mm*1e-3/(2*self.sim_pixel_m))               # Radius in pixels
         t_bkg_in_pix = int(self.t_m/self.sim_pixel_m)
         
-        t_map_sph = create_ellipse_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, a = R_in_pix, b=R_in_pix, c=R_in_pix)
+        f = self.dict_params["RMS scattering angle in X (μrad)"]
+        R_microst_um = float(self.dict_params["RMS scattering angle in Y (μrad)"])
+        R_microst_pix = R_microst_um*1e-6/(self.sim_pixel_m)
+        if( (f == "" or float(f) == 0.0) or float(f)==1.0):
+            t_map_sph = create_ellipse_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, a = R_in_pix, b=R_in_pix, c=R_in_pix)
+        else:
+            t_map_sph = create_ellipse_proj_DF(theta_y = theta_y, theta_z=0, img_size=self.img_size, binning_factor=self.binning_factor, a = R_in_pix, b=R_in_pix, c=R_in_pix, f=float(f), R_microst=R_microst_pix)
+
         t_map_bkg = create_box_proj(theta_y = theta_y, theta_z=0, img_size=self.img_size, Lx=self.img_size[1], Ly=self.img_size[0], Lz=t_bkg_in_pix)
 
         t_map_1 = t_map_sph*self.sim_pixel_m
